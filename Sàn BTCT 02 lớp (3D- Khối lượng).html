@@ -1,0 +1,765 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AS - Sàn BTCT 2 lớp thép + dầm + cốt thép dầm</title>
+  <style>
+    :root{
+      --navy:#0f2742;
+      --ink:#111827;
+      --muted:#64748b;
+      --line:#d7dee8;
+      --bg:#f4f7fb;
+      --panel:#ffffff;
+      --good:#0f8b56;
+      --warn:#c97a00;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+    .app{display:grid;grid-template-columns:370px 1fr;height:100vh;overflow:hidden}
+    .panel{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:18px}
+    .title{font-weight:800;font-size:19px;color:var(--navy);margin-bottom:4px}
+    .sub{font-size:12px;color:var(--muted);line-height:1.45;margin-bottom:16px}
+    .section{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+    .section h3{font-size:13px;margin:0 0 10px;color:var(--navy)}
+    .row{display:grid;grid-template-columns:1fr 102px;gap:10px;align-items:center;margin:8px 0}
+    .row label{font-size:12px;color:#334155}
+    input,select{
+      width:100%;padding:7px 8px;border:1px solid #cbd5e1;border-radius:7px;
+      background:white;color:#111827;font-size:12px;outline:none
+    }
+    input:focus,select:focus{border-color:#7aa7df;box-shadow:0 0 0 2px #dbeafe}
+    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+    button{border:0;border-radius:8px;padding:9px 10px;font-size:12px;font-weight:700;cursor:pointer}
+    .primary{background:var(--navy);color:white}
+    .secondary{background:#e8eef6;color:var(--navy)}
+    .check{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:12px}
+    .check input{width:auto}
+    .checks2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    .stat{
+      margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fbfdff;
+      font-size:12px;line-height:1.6
+    }
+    .stat b{color:var(--navy)}
+    .ok{color:var(--good);font-weight:700}
+    .warn{color:var(--warn);font-weight:700}
+    .viewer{position:relative;overflow:hidden;background:linear-gradient(#eef4fa,#dce6f2)}
+    #c{width:100%;height:100%;display:block}
+    .topbar{position:absolute;left:14px;top:14px;display:flex;gap:8px;z-index:5;flex-wrap:wrap}
+    .chip{
+      background:rgba(255,255,255,.93);border:1px solid rgba(15,39,66,.14);border-radius:8px;
+      padding:7px 10px;font-size:12px;box-shadow:0 4px 18px rgba(15,39,66,.08)
+    }
+    .legend{
+      position:absolute;right:14px;top:14px;background:rgba(255,255,255,.94);border:1px solid var(--line);
+      border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.75;z-index:5
+    }
+    .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+    .bottom{
+      position:absolute;left:50%;transform:translateX(-50%);bottom:12px;background:rgba(15,39,66,.92);color:white;
+      border-radius:8px;padding:7px 11px;font-size:11px;z-index:5
+    }
+    @media(max-width:900px){
+      .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+      .panel{border-right:0;border-bottom:1px solid var(--line);max-height:52vh}
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <div class="title">Sàn BTCT – 2 lớp thép + dầm</div>
+    <div class="sub">
+      Minh họa 3D sàn BTCT 2 lớp thép, có con kê, thép chân chó, dầm bên dưới và cốt thép dầm.
+      Quy tắc mô phỏng đã hiệu chỉnh: <b>đai dầm là lớp ngoài cùng của lồng thép dầm</b>, cốt dọc dầm nằm phía trong đai.
+      <b>Hai phương thép lớp trên sàn được xếp lệch cao độ nhau</b> (không dính cùng một mặt phẳng).
+      Trong dải có dầm, <b>thép sàn song song với dầm sẽ bỏ</b> theo nguyên tắc chi tiết này; thép sàn vuông góc dầm sẽ được <b>uốn hạ cục bộ – chạy dưới thép chủ dầm – rồi uốn lên lại</b> để nhìn rõ hơn.
+      Tại chỗ giao 2 dầm, mô hình thể hiện một dầm <b>kê lên</b> dầm còn lại để dễ đọc cấu tạo.
+    </div>
+
+    <div class="section">
+      <h3>1. Hình học sàn</h3>
+      <div class="row"><label>Chiều dài L (m)</label><input id="L" type="number" min="1" step="0.1" value="4.0"></div>
+      <div class="row"><label>Chiều rộng B (m)</label><input id="B" type="number" min="1" step="0.1" value="3.0"></div>
+      <div class="row"><label>Độ dày sàn h (mm)</label><input id="H" type="number" min="80" step="5" value="100"></div>
+    </div>
+
+    <div class="section">
+      <h3>2. Cốt thép sàn</h3>
+      <div class="row"><label>Ø thép sàn (mm)</label><input id="D" type="number" min="6" step="1" value="10"></div>
+      <div class="row"><label>Khoảng cách a (mm)</label><input id="A" type="number" min="80" step="10" value="200"></div>
+      <div class="row"><label>Cover trên (mm)</label><input id="CT" type="number" min="10" step="5" value="20"></div>
+      <div class="row"><label>Cover dưới (mm)</label><input id="CB" type="number" min="10" step="5" value="20"></div>
+    </div>
+
+    <div class="section">
+      <h3>3. Con kê + chân chó</h3>
+      <div class="row"><label>Bước con kê dưới (mm)</label><input id="SK" type="number" min="300" step="100" value="800"></div>
+      <div class="row"><label>Ø chân chó (mm)</label><input id="DC" type="number" min="6" step="1" value="8"></div>
+      <div class="row"><label>Bước chân chó (mm)</label><input id="AC" type="number" min="500" step="100" value="1000"></div>
+    </div>
+
+    <div class="section">
+      <h3>4. Dầm dưới sàn</h3>
+      <div class="checks2">
+        <label class="check"><input id="showBeamX" type="checkbox" checked> Dầm theo phương X</label>
+        <label class="check"><input id="showBeamZ" type="checkbox" checked> Dầm theo phương Z</label>
+      </div>
+      <label class="check"><input id="omitParallel" type="checkbox" checked> Bỏ thép sàn song song trong dải dầm (theo nguyên tắc chi tiết này)</label>
+      <div class="row"><label>Bề rộng dầm bw (mm)</label><input id="BW" type="number" min="120" step="10" value="220"></div>
+      <div class="row"><label>Chiều cao dầm Hbeam (mm)</label><input id="BH" type="number" min="200" step="10" value="400"></div>
+      <div class="row"><label>Cover dầm (mm)</label><input id="BCV" type="number" min="15" step="5" value="25"></div>
+      <div class="row"><label>Ø thép dọc dầm (mm)</label><input id="BDIA" type="number" min="10" step="2" value="16"></div>
+      <div class="row"><label>Ø đai dầm (mm)</label><input id="STDIA" type="number" min="6" step="1" value="6"></div>
+      <div class="row"><label>Bước đai gối (mm)</label><input id="SSUP" type="number" min="80" step="10" value="100"></div>
+      <div class="row"><label>Bước đai nhịp (mm)</label><input id="SMID" type="number" min="120" step="10" value="200"></div>
+      <div class="row"><label>Ưu tiên tại giao dầm</label>
+        <select id="beamPriority">
+          <option value="XoverZ" selected>Dầm X kê lên dầm Z</option>
+          <option value="ZoverX">Dầm Z kê lên dầm X</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>5. Hiển thị</h3>
+      <label class="check"><input id="showConcrete" type="checkbox" checked> Hiện bê tông sàn trong suốt</label>
+      <label class="check"><input id="showTop" type="checkbox" checked> Hiện lớp thép sàn trên</label>
+      <label class="check"><input id="showBottom" type="checkbox" checked> Hiện lớp thép sàn dưới</label>
+      <label class="check"><input id="showSpacer" type="checkbox" checked> Hiện con kê dưới</label>
+      <label class="check"><input id="showChair" type="checkbox" checked> Hiện thép chân chó</label>
+      <label class="check"><input id="showBeamBody" type="checkbox" checked> Hiện thân dầm</label>
+      <label class="check"><input id="showBeamSteel" type="checkbox" checked> Hiện cốt thép dầm</label>
+      <label class="check"><input id="showAxes" type="checkbox" checked> Hiện trục XYZ</label>
+      <div class="buttons">
+        <button class="primary" id="updateBtn">Cập nhật 3D</button>
+        <button class="secondary" id="resetBtn">Reset góc nhìn</button>
+      </div>
+    </div>
+
+    <div class="stat" id="stat"></div>
+  </aside>
+
+  <main class="viewer" id="viewer">
+    <canvas id="c"></canvas>
+    <div class="topbar">
+      <div class="chip" id="chip1">h = 100 mm</div>
+      <div class="chip" id="chip2">Sàn D10a200</div>
+      <div class="chip" id="chip3">Dầm 220×400</div>
+    </div>
+    <div class="legend">
+      <div><span class="dot" style="background:#d54a4a"></span>Thép sàn lớp trên</div>
+      <div><span class="dot" style="background:#2b6cb0"></span>Thép sàn lớp dưới</div>
+      <div><span class="dot" style="background:#22a06b"></span>Thép chân chó</div>
+      <div><span class="dot" style="background:#7c8a99"></span>Con kê</div>
+      <div><span class="dot" style="background:#b55a18"></span>Thép dọc dầm</div>
+      <div><span class="dot" style="background:#e6a700"></span>Đai dầm – lớp ngoài lồng thép</div>
+      <div><span class="dot" style="background:#8fa3b7"></span>Bê tông / thân dầm</div>
+    </div>
+    <div class="bottom">Chuột trái: xoay · Chuột phải: pan · Con lăn: zoom</div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xeaf1f8);
+
+const camera = new THREE.PerspectiveCamera(42, 2, 0.01, 300);
+camera.position.set(6.0, 4.8, 6.8);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.screenSpacePanning = true;
+controls.mouseButtons = {
+  LEFT: THREE.MOUSE.ROTATE,
+  MIDDLE: THREE.MOUSE.DOLLY,
+  RIGHT: THREE.MOUSE.PAN
+};
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x607080, 1.15));
+const dl = new THREE.DirectionalLight(0xffffff, .75);
+dl.position.set(3,6,4); scene.add(dl);
+
+const root = new THREE.Group(); scene.add(root);
+
+const matConcrete = new THREE.MeshPhysicalMaterial({
+  color:0xc8d0d9, transparent:true, opacity:.28, roughness:.92,
+  metalness:0, side:THREE.DoubleSide, depthWrite:false
+});
+const matBeamBody = new THREE.MeshPhysicalMaterial({
+  color:0x8fa3b7, transparent:true, opacity:.20, roughness:.9,
+  metalness:0, side:THREE.DoubleSide, depthWrite:false
+});
+const matTop = new THREE.MeshStandardMaterial({color:0xd54a4a, roughness:.55, metalness:.15});
+const matBottom = new THREE.MeshStandardMaterial({color:0x2b6cb0, roughness:.55, metalness:.15});
+const matChair = new THREE.MeshStandardMaterial({color:0x22a06b, roughness:.55, metalness:.15});
+const matSpacer = new THREE.MeshStandardMaterial({color:0x7c8a99, roughness:.9, metalness:.05});
+const matBeamMain = new THREE.MeshStandardMaterial({color:0xb55a18, roughness:.55, metalness:.2});
+const matStirrup = new THREE.MeshStandardMaterial({color:0xe6a700, roughness:.5, metalness:.15});
+const matEdge = new THREE.LineBasicMaterial({color:0x51606f, transparent:true, opacity:.65});
+
+function clearGroup(g){
+  while(g.children.length){
+    const o = g.children.pop();
+    if(o.geometry) o.geometry.dispose();
+  }
+}
+function cylBetween(x1,y1,z1,x2,y2,z2,r,mat){
+  const a = new THREE.Vector3(x1,y1,z1);
+  const b = new THREE.Vector3(x2,y2,z2);
+  const v = new THREE.Vector3().subVectors(b,a);
+  const len = v.length();
+  if(len < 1e-6) return null;
+  const geom = new THREE.CylinderGeometry(r,r,len,10,1,false);
+  const mesh = new THREE.Mesh(geom,mat);
+  mesh.position.copy(a).add(b).multiplyScalar(.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), v.clone().normalize());
+  root.add(mesh);
+  return mesh;
+}
+function drawPolyline(points, r, mat){
+  for(let i=0;i<points.length-1;i++){
+    const p1 = points[i], p2 = points[i+1];
+    cylBetween(p1[0],p1[1],p1[2], p2[0],p2[1],p2[2], r, mat);
+  }
+}
+function localLift1D(v, flatHalf, rampRun, lift){
+  const av = Math.abs(v);
+  if(av <= flatHalf) return lift;
+  if(av <= flatHalf + rampRun){
+    const t = (av - flatHalf)/rampRun;
+    return lift * (1 - t)*(1 - t); // bo mềm hơn ở đoạn chuyển tiếp
+  }
+  return 0;
+}
+function addBox(w,h,d,x,y,z,mat){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);
+  m.position.set(x,y,z);
+  root.add(m);
+  return m;
+}
+function addEdges(geom, x, y, z){
+  const e = new THREE.LineSegments(new THREE.EdgesGeometry(geom), matEdge);
+  e.position.set(x,y,z);
+  root.add(e);
+}
+function fmt(n,d=0){return Number(n).toFixed(d)}
+
+function positionsBySpacing(span, step){
+  const n = Math.min(100, Math.floor(span/step)+1);
+  if(n<=1) return [0];
+  const used = (n-1)*step;
+  const start = -used/2;
+  return Array.from({length:n}, (_,i)=>start+i*step);
+}
+function centeredPositions(span, step, margin=0){
+  const usable = Math.max(0.001, span - 2*margin);
+  if(step >= usable) return [0];
+  const n = Math.max(2, Math.floor(usable/step)+1);
+  const used = (n-1)*step;
+  const start = -used/2;
+  return Array.from({length:n}, (_,i)=>start+i*step);
+}
+function inStrip(v, halfWidth){
+  return Math.abs(v) < halfWidth - 1e-6;
+}
+function drawStirrupX(x, yTop, yBot, zLeft, zRight, r){
+  cylBetween(x, yBot, zLeft, x, yTop, zLeft, r, matStirrup);
+  cylBetween(x, yBot, zRight, x, yTop, zRight, r, matStirrup);
+  cylBetween(x, yTop, zLeft, x, yTop, zRight, r, matStirrup);
+  cylBetween(x, yBot, zLeft, x, yBot, zRight, r, matStirrup);
+}
+function drawStirrupZ(z, yTop, yBot, xLeft, xRight, r){
+  cylBetween(xLeft, yBot, z, xLeft, yTop, z, r, matStirrup);
+  cylBetween(xRight, yBot, z, xRight, yTop, z, r, matStirrup);
+  cylBetween(xLeft, yTop, z, xRight, yTop, z, r, matStirrup);
+  cylBetween(xLeft, yBot, z, xRight, yBot, z, r, matStirrup);
+}
+function build(){
+  clearGroup(root);
+
+  const L = Math.max(1, +document.getElementById('L').value || 4);
+  const B = Math.max(1, +document.getElementById('B').value || 3);
+  const H = Math.max(80, +document.getElementById('H').value || 100);
+  const D = Math.max(6, +document.getElementById('D').value || 10);
+  const A = Math.max(80, +document.getElementById('A').value || 200);
+  const CT = Math.max(0, +document.getElementById('CT').value || 20);
+  const CB = Math.max(0, +document.getElementById('CB').value || 20);
+  const SK = Math.max(300, +document.getElementById('SK').value || 800);
+  const DC = Math.max(6, +document.getElementById('DC').value || 8);
+  const AC = Math.max(500, +document.getElementById('AC').value || 1000);
+  const BW = Math.max(120, +document.getElementById('BW').value || 220);
+  const BH = Math.max(200, +document.getElementById('BH').value || 400);
+  const BCV = Math.max(15, +document.getElementById('BCV').value || 25);
+  const BDIA = Math.max(10, +document.getElementById('BDIA').value || 16);
+  const STDIA = Math.max(6, +document.getElementById('STDIA').value || 6);
+  const SSUP = Math.max(80, +document.getElementById('SSUP').value || 100);
+  const SMID = Math.max(120, +document.getElementById('SMID').value || 200);
+  const beamPriority = document.getElementById('beamPriority').value;
+
+  const showConcrete = document.getElementById('showConcrete').checked;
+  const showTop = document.getElementById('showTop').checked;
+  const showBottom = document.getElementById('showBottom').checked;
+  const showSpacer = document.getElementById('showSpacer').checked;
+  const showChair = document.getElementById('showChair').checked;
+  const showBeamX = document.getElementById('showBeamX').checked;
+  const showBeamZ = document.getElementById('showBeamZ').checked;
+  const omitParallel = document.getElementById('omitParallel').checked;
+  const showBeamBody = document.getElementById('showBeamBody').checked;
+  const showBeamSteel = document.getElementById('showBeamSteel').checked;
+  const showAxes = document.getElementById('showAxes').checked;
+
+  // Mét
+  const hm = H/1000, dm = D/1000, am = A/1000;
+  const ctm = CT/1000, cbm = CB/1000;
+  const skm = SK/1000, dcm = DC/1000, acm = AC/1000;
+  const bwm = BW/1000, bhm = BH/1000, bcvm = BCV/1000, bdiam = BDIA/1000, stdiam = STDIA/1000;
+  const ssupm = SSUP/1000, smidm = SMID/1000;
+
+  // Sàn
+  if(showConcrete){
+    const slabGeom = new THREE.BoxGeometry(L, hm, B);
+    const box = new THREE.Mesh(slabGeom, matConcrete);
+    box.position.y = 0;
+    root.add(box);
+    addEdges(slabGeom, 0, 0, 0);
+  }
+
+  // Dầm dưới sàn: giả thiết đỉnh dầm bằng đỉnh sàn, dầm hạ xuống phía dưới.
+  const beamTopY = hm/2;
+  const beamCenterY = beamTopY - bhm/2;
+  const beamBottomY = beamTopY - bhm;
+
+  if(showBeamBody && showBeamX){
+    const g = new THREE.BoxGeometry(L, bhm, bwm);
+    const m = new THREE.Mesh(g, matBeamBody);
+    m.position.set(0, beamCenterY, 0);
+    root.add(m);
+    addEdges(g, 0, beamCenterY, 0);
+  }
+  if(showBeamBody && showBeamZ){
+    const g = new THREE.BoxGeometry(bwm, bhm, B);
+    const m = new THREE.Mesh(g, matBeamBody);
+    m.position.set(0, beamCenterY, 0);
+    root.add(m);
+    addEdges(g, 0, beamCenterY, 0);
+  }
+
+  // Cao độ thép sàn
+  const yBotX = -hm/2 + cbm + dm/2;
+  const yBotZ = yBotX + dm;
+
+  // Lớp trên sàn: 2 phương lệch nhau 1D, tương tự nguyên tắc lớp dưới.
+  const yTopXBase =  hm/2 - ctm - dm/2;
+  const yTopZBase =  yTopXBase - dm;
+
+  // ĐAI DẦM LÀ LỚP NGOÀI CÙNG CỦA LỒNG THÉP:
+  // cover dầm được tính tới mặt ngoài đai; cốt dọc dầm nằm phía trong đai.
+  const yStirrupTopCL = beamTopY - bcvm - stdiam/2;
+  const yStirrupBotCL = beamBottomY + bcvm + stdiam/2;
+  const yBeamTopSteel = beamTopY - bcvm - stdiam - bdiam/2;
+  const yBeamBottomSteel = beamBottomY + bcvm + stdiam + bdiam/2;
+
+  // Khi thanh sàn vuông góc dầm đi qua vùng dầm, chỉ hạ CỤC BỘ đoạn nằm trong dải dầm.
+  const passUnderOffset = (bdiam + dm)/2 + 0.006;
+  const yTopXUnderBeam = Math.min(yTopXBase, yBeamTopSteel - passUnderOffset); // thanh sàn phương X chui qua dầm Z
+  const yTopZUnderBeam = Math.min(yTopZBase, yBeamTopSteel - passUnderOffset); // thanh sàn phương Z chui qua dầm X
+
+  const posZ = positionsBySpacing(B, am);
+  const posX = positionsBySpacing(L, am);
+  const rSlab = dm/2;
+
+  let topXCount=0, topZCount=0, botXCount=0, botZCount=0;
+
+  // Vẽ thép sàn dưới
+  if(showBottom){
+    posZ.forEach(z=>{
+      if(omitParallel && showBeamX && inStrip(z, bwm/2)) return; // song song dầm X => bỏ
+      cylBetween(-L/2, yBotX, z, L/2, yBotX, z, rSlab, matBottom);
+      botXCount++;
+    });
+    posX.forEach(x=>{
+      if(omitParallel && showBeamZ && inStrip(x, bwm/2)) return; // song song dầm Z => bỏ
+      cylBetween(x, yBotZ, -B/2, x, yBotZ, B/2, rSlab, matBottom);
+      botZCount++;
+    });
+  }
+
+  // Vẽ thép sàn trên
+  if(showTop){
+    const bendRun = Math.max(0.035, Math.min(0.06, bwm*0.24));      // đoạn uốn xuống / lên, sát dầm
+    const flatInset = Math.max(0.006, Math.min(0.016, bwm*0.08));   // vào gần thép dầm hơn
+    const softRun = bendRun*0.55;                                    // đoạn bo mềm
+
+    // Thanh phương X (chạy theo chiều dài L, tọa độ z cố định)
+    posZ.forEach(z=>{
+      if(omitParallel && showBeamX && inStrip(z, bwm/2)) return; // song song dầm X => bỏ
+      if(showBeamZ){
+        const pts = [
+          [-L/2, yTopXBase, z],
+          [-bwm/2 - bendRun, yTopXBase, z],
+          [-bwm/2 - softRun, yTopXBase*0.72 + yTopXUnderBeam*0.28, z],
+          [-bwm/2 + flatInset, yTopXUnderBeam, z],
+          [ bwm/2 - flatInset, yTopXUnderBeam, z],
+          [ bwm/2 + softRun, yTopXBase*0.72 + yTopXUnderBeam*0.28, z],
+          [ bwm/2 + bendRun, yTopXBase, z],
+          [ L/2, yTopXBase, z]
+        ];
+        drawPolyline(pts, rSlab, matTop);
+      }else{
+        cylBetween(-L/2, yTopXBase, z, L/2, yTopXBase, z, rSlab, matTop);
+      }
+      topXCount++;
+    });
+
+    // Thanh phương Z (chạy theo chiều rộng B, tọa độ x cố định)
+    posX.forEach(x=>{
+      if(omitParallel && showBeamZ && inStrip(x, bwm/2)) return; // song song dầm Z => bỏ
+      if(showBeamX){
+        const pts = [
+          [x, yTopZBase, -B/2],
+          [x, yTopZBase, -bwm/2 - bendRun],
+          [x, yTopZBase*0.72 + yTopZUnderBeam*0.28, -bwm/2 - softRun],
+          [x, yTopZUnderBeam, -bwm/2 + flatInset],
+          [x, yTopZUnderBeam,  bwm/2 - flatInset],
+          [x, yTopZBase*0.72 + yTopZUnderBeam*0.28,  bwm/2 + softRun],
+          [x, yTopZBase,  bwm/2 + bendRun],
+          [x, yTopZBase,  B/2]
+        ];
+        drawPolyline(pts, rSlab, matTop);
+      }else{
+        cylBetween(x, yTopZBase, -B/2, x, yTopZBase, B/2, rSlab, matTop);
+      }
+      topZCount++;
+    });
+  }
+  // Con kê lớp dưới - bỏ qua vùng có dầm để nhìn gọn hơn.
+  let spacerCount = 0;
+  if(showSpacer && cbm > 0.001){
+    const sW = Math.min(0.05, Math.max(0.035, am*0.35));
+    const sD = sW;
+    const sH = cbm;
+    const xs = centeredPositions(L, skm, 0.18);
+    const zs = centeredPositions(B, skm, 0.18);
+    xs.forEach(x=>{
+      zs.forEach(z=>{
+        if((showBeamX && inStrip(z, bwm/2+0.03)) || (showBeamZ && inStrip(x, bwm/2+0.03))) return;
+        addBox(sW, sH, sD, x, -hm/2 + sH/2, z, matSpacer);
+        spacerCount++;
+      });
+    });
+  }
+
+  // Thép chân chó - bỏ qua vùng dầm để khỏi chồng chéo với cốt thép dầm.
+  let chairCount = 0;
+  if(showChair){
+    const clearGap = Math.min(yTopXBase, yTopZBase, yTopXUnderBeam, yTopZUnderBeam) - dm/2 - (yBotZ + dm/2);
+    const effectiveLift = Math.max(0.05, clearGap + dm + dcm);
+    const yBase = yBotZ + dm/2 + dcm/2;
+    const yHead = yBase + effectiveLift;
+    const headW = Math.min(0.10, Math.max(0.06, acm*0.08));
+    const footW = Math.min(0.18, Math.max(0.12, acm*0.14));
+    const zRows = centeredPositions(B, Math.min(acm, 1.2), 0.30);
+    const xRows = centeredPositions(L, acm, 0.30);
+    xRows.forEach(x=>{
+      zRows.forEach(z=>{
+        if((showBeamX && inStrip(z, bwm/2+0.04)) || (showBeamZ && inStrip(x, bwm/2+0.04))) return;
+        cylBetween(x-footW/2, yBase, z, x-headW/2, yHead, z, dcm/2, matChair);
+        cylBetween(x+footW/2, yBase, z, x+headW/2, yHead, z, dcm/2, matChair);
+        cylBetween(x-headW/2, yHead, z, x+headW/2, yHead, z, dcm/2, matChair);
+        cylBetween(x-footW/2, yBase, z-0.025, x-footW/2, yBase, z+0.025, dcm/2, matChair);
+        cylBetween(x+footW/2, yBase, z-0.025, x+footW/2, yBase, z+0.025, dcm/2, matChair);
+        chairCount++;
+      });
+    });
+  }
+
+  // Cốt thép dầm
+  let stirrupCountX = 0, stirrupCountZ = 0;
+  if(showBeamSteel){
+    const rBeam = bdiam/2;
+    const rSt = stdiam/2;
+    const zSide = bwm/2 - bcvm - stdiam - rBeam;
+    const xSide = bwm/2 - bcvm - stdiam - rBeam;
+
+    // Tâm đai cách bề mặt bê tông = cover + Øđai/2.
+    const yStTop = yStirrupTopCL;
+    const yStBot = yStirrupBotCL;
+    const zStL = -bwm/2 + bcvm + rSt;
+    const zStR =  bwm/2 - bcvm - rSt;
+    const xStL = -bwm/2 + bcvm + rSt;
+    const xStR =  bwm/2 - bcvm - rSt;
+    const supportLenX = Math.min(1.0, L*0.22);
+    const supportLenZ = Math.min(1.0, B*0.22);
+
+    // Nếu có 2 dầm giao nhau, một dầm sẽ được thể hiện "kê lên" theo dạng:
+    // đoạn thẳng bình thường -> đoạn xiên ngắn -> đoạn nằm ngang kê lên -> đoạn xiên ngắn -> đoạn thẳng bình thường.
+    const hasBothBeams = showBeamX && showBeamZ;
+    const overLift = hasBothBeams ? Math.max(0.020, Math.min(0.035, bhm*0.08)) : 0.0;
+    const flatHalf = Math.max(bwm*0.50, 0.14);   // nửa chiều dài đoạn nằm ngang kê lên
+    const rampRun = Math.max(0.06, Math.min(0.11, bwm*0.48));
+    const midLift = overLift*0.45;
+    const topDrop = Math.min(0.018, Math.max(0.010, overLift*0.75)); // thép trên vặn xuống tại nút giao
+    const xBeamOver = hasBothBeams && beamPriority === 'XoverZ';
+    const zBeamOver = hasBothBeams && beamPriority === 'ZoverX';
+
+    // Dầm X
+    if(showBeamX){
+      if(xBeamOver){
+        // thanh dọc trên
+        drawPolyline([
+          [-L/2, yBeamTopSteel, -zSide],
+          [-flatHalf - rampRun, yBeamTopSteel, -zSide],
+          [-flatHalf - rampRun*0.62, yBeamTopSteel - topDrop*0.35, -zSide],
+          [-flatHalf - rampRun*0.22, yBeamTopSteel - topDrop*0.85, -zSide],
+          [-flatHalf*0.30, yBeamTopSteel - topDrop, -zSide],
+          [ flatHalf*0.30, yBeamTopSteel - topDrop, -zSide],
+          [ flatHalf + rampRun*0.22, yBeamTopSteel - topDrop*0.85, -zSide],
+          [ flatHalf + rampRun*0.62, yBeamTopSteel - topDrop*0.35, -zSide],
+          [ flatHalf + rampRun, yBeamTopSteel, -zSide],
+          [ L/2, yBeamTopSteel, -zSide]
+        ], rBeam, matBeamMain);
+        drawPolyline([
+          [-L/2, yBeamTopSteel, zSide],
+          [-flatHalf - rampRun, yBeamTopSteel, zSide],
+          [-flatHalf - rampRun*0.62, yBeamTopSteel - topDrop*0.35, zSide],
+          [-flatHalf - rampRun*0.22, yBeamTopSteel - topDrop*0.85, zSide],
+          [-flatHalf*0.30, yBeamTopSteel - topDrop, zSide],
+          [ flatHalf*0.30, yBeamTopSteel - topDrop, zSide],
+          [ flatHalf + rampRun*0.22, yBeamTopSteel - topDrop*0.85, zSide],
+          [ flatHalf + rampRun*0.62, yBeamTopSteel - topDrop*0.35, zSide],
+          [ flatHalf + rampRun, yBeamTopSteel, zSide],
+          [ L/2, yBeamTopSteel, zSide]
+        ], rBeam, matBeamMain);
+        // thanh dọc dưới
+        drawPolyline([
+          [-L/2, yBeamBottomSteel, -zSide],
+          [-flatHalf - rampRun, yBeamBottomSteel, -zSide],
+          [-flatHalf - rampRun*0.45, yBeamBottomSteel + midLift, -zSide],
+          [-flatHalf, yBeamBottomSteel + overLift, -zSide],
+          [ flatHalf, yBeamBottomSteel + overLift, -zSide],
+          [ flatHalf + rampRun*0.45, yBeamBottomSteel + midLift, -zSide],
+          [ flatHalf + rampRun, yBeamBottomSteel, -zSide],
+          [ L/2, yBeamBottomSteel, -zSide]
+        ], rBeam, matBeamMain);
+        drawPolyline([
+          [-L/2, yBeamBottomSteel, zSide],
+          [-flatHalf - rampRun, yBeamBottomSteel, zSide],
+          [-flatHalf - rampRun*0.45, yBeamBottomSteel + midLift, zSide],
+          [-flatHalf, yBeamBottomSteel + overLift, zSide],
+          [ flatHalf, yBeamBottomSteel + overLift, zSide],
+          [ flatHalf + rampRun*0.45, yBeamBottomSteel + midLift, zSide],
+          [ flatHalf + rampRun, yBeamBottomSteel, zSide],
+          [ L/2, yBeamBottomSteel, zSide]
+        ], rBeam, matBeamMain);
+
+        const stirrupXs = [];
+        for(let x=-L/2 + 0.03; x<=-L/2 + supportLenX + 1e-6; x+=ssupm) stirrupXs.push(x);
+        for(let x=-L/2 + supportLenX + smidm/2; x<=L/2 - supportLenX + 1e-6; x+=smidm) stirrupXs.push(x);
+        for(let x=L/2 - supportLenX; x<=L/2 - 0.03 + 1e-6; x+=ssupm) stirrupXs.push(x);
+        stirrupXs.forEach(x=>{
+          let yAdd = localLift1D(x, flatHalf, rampRun, overLift);
+          drawStirrupX(x, yStTop + yAdd, yStBot + yAdd, zStL, zStR, rSt);
+          stirrupCountX++;
+        });
+      }else{
+        cylBetween(-L/2, yBeamTopSteel, -zSide, L/2, yBeamTopSteel, -zSide, rBeam, matBeamMain);
+        cylBetween(-L/2, yBeamTopSteel,  zSide, L/2, yBeamTopSteel,  zSide, rBeam, matBeamMain);
+        cylBetween(-L/2, yBeamBottomSteel, -zSide, L/2, yBeamBottomSteel, -zSide, rBeam, matBeamMain);
+        cylBetween(-L/2, yBeamBottomSteel,  zSide, L/2, yBeamBottomSteel,  zSide, rBeam, matBeamMain);
+
+        for(let x=-L/2 + 0.03; x<=-L/2 + supportLenX + 1e-6; x+=ssupm){ drawStirrupX(x, yStTop, yStBot, zStL, zStR, rSt); stirrupCountX++; }
+        for(let x=-L/2 + supportLenX + smidm/2; x<=L/2 - supportLenX + 1e-6; x+=smidm){ drawStirrupX(x, yStTop, yStBot, zStL, zStR, rSt); stirrupCountX++; }
+        for(let x=L/2 - supportLenX; x<=L/2 - 0.03 + 1e-6; x+=ssupm){ drawStirrupX(x, yStTop, yStBot, zStL, zStR, rSt); stirrupCountX++; }
+      }
+    }
+
+    // Dầm Z
+    if(showBeamZ){
+      if(zBeamOver){
+        drawPolyline([
+          [-xSide, yBeamTopSteel, -B/2],
+          [-xSide, yBeamTopSteel, -flatHalf - rampRun],
+          [-xSide, yBeamTopSteel - topDrop*0.35, -flatHalf - rampRun*0.62],
+          [-xSide, yBeamTopSteel - topDrop*0.85, -flatHalf - rampRun*0.22],
+          [-xSide, yBeamTopSteel - topDrop, -flatHalf*0.30],
+          [-xSide, yBeamTopSteel - topDrop,  flatHalf*0.30],
+          [-xSide, yBeamTopSteel - topDrop*0.85,  flatHalf + rampRun*0.22],
+          [-xSide, yBeamTopSteel - topDrop*0.35,  flatHalf + rampRun*0.62],
+          [-xSide, yBeamTopSteel,  flatHalf + rampRun],
+          [-xSide, yBeamTopSteel,  B/2]
+        ], rBeam, matBeamMain);
+        drawPolyline([
+          [xSide, yBeamTopSteel, -B/2],
+          [xSide, yBeamTopSteel, -flatHalf - rampRun],
+          [xSide, yBeamTopSteel - topDrop*0.35, -flatHalf - rampRun*0.62],
+          [xSide, yBeamTopSteel - topDrop*0.85, -flatHalf - rampRun*0.22],
+          [xSide, yBeamTopSteel - topDrop, -flatHalf*0.30],
+          [xSide, yBeamTopSteel - topDrop,  flatHalf*0.30],
+          [xSide, yBeamTopSteel - topDrop*0.85,  flatHalf + rampRun*0.22],
+          [xSide, yBeamTopSteel - topDrop*0.35,  flatHalf + rampRun*0.62],
+          [xSide, yBeamTopSteel,  flatHalf + rampRun],
+          [xSide, yBeamTopSteel,  B/2]
+        ], rBeam, matBeamMain);
+        drawPolyline([
+          [-xSide, yBeamBottomSteel, -B/2],
+          [-xSide, yBeamBottomSteel, -flatHalf - rampRun],
+          [-xSide, yBeamBottomSteel + midLift, -flatHalf - rampRun*0.45],
+          [-xSide, yBeamBottomSteel + overLift, -flatHalf],
+          [-xSide, yBeamBottomSteel + overLift,  flatHalf],
+          [-xSide, yBeamBottomSteel + midLift,  flatHalf + rampRun*0.45],
+          [-xSide, yBeamBottomSteel,  flatHalf + rampRun],
+          [-xSide, yBeamBottomSteel,  B/2]
+        ], rBeam, matBeamMain);
+        drawPolyline([
+          [xSide, yBeamBottomSteel, -B/2],
+          [xSide, yBeamBottomSteel, -flatHalf - rampRun],
+          [xSide, yBeamBottomSteel + midLift, -flatHalf - rampRun*0.45],
+          [xSide, yBeamBottomSteel + overLift, -flatHalf],
+          [xSide, yBeamBottomSteel + overLift,  flatHalf],
+          [xSide, yBeamBottomSteel + midLift,  flatHalf + rampRun*0.45],
+          [xSide, yBeamBottomSteel,  flatHalf + rampRun],
+          [xSide, yBeamBottomSteel,  B/2]
+        ], rBeam, matBeamMain);
+
+        const stirrupZs = [];
+        for(let z=-B/2 + 0.03; z<=-B/2 + supportLenZ + 1e-6; z+=ssupm) stirrupZs.push(z);
+        for(let z=-B/2 + supportLenZ + smidm/2; z<=B/2 - supportLenZ + 1e-6; z+=smidm) stirrupZs.push(z);
+        for(let z=B/2 - supportLenZ; z<=B/2 - 0.03 + 1e-6; z+=ssupm) stirrupZs.push(z);
+        stirrupZs.forEach(z=>{
+          let yAdd = localLift1D(z, flatHalf, rampRun, overLift);
+          drawStirrupZ(z, yStTop + yAdd, yStBot + yAdd, xStL, xStR, rSt);
+          stirrupCountZ++;
+        });
+      }else{
+        cylBetween(-xSide, yBeamTopSteel, -B/2, -xSide, yBeamTopSteel, B/2, rBeam, matBeamMain);
+        cylBetween( xSide, yBeamTopSteel, -B/2,  xSide, yBeamTopSteel, B/2, rBeam, matBeamMain);
+        cylBetween(-xSide, yBeamBottomSteel, -B/2, -xSide, yBeamBottomSteel, B/2, rBeam, matBeamMain);
+        cylBetween( xSide, yBeamBottomSteel, -B/2,  xSide, yBeamBottomSteel, B/2, rBeam, matBeamMain);
+
+        for(let z=-B/2 + 0.03; z<=-B/2 + supportLenZ + 1e-6; z+=ssupm){ drawStirrupZ(z, yStTop, yStBot, xStL, xStR, rSt); stirrupCountZ++; }
+        for(let z=-B/2 + supportLenZ + smidm/2; z<=B/2 - supportLenZ + 1e-6; z+=smidm){ drawStirrupZ(z, yStTop, yStBot, xStL, xStR, rSt); stirrupCountZ++; }
+        for(let z=B/2 - supportLenZ; z<=B/2 - 0.03 + 1e-6; z+=ssupm){ drawStirrupZ(z, yStTop, yStBot, xStL, xStR, rSt); stirrupCountZ++; }
+      }
+    }
+  }
+
+  if(showAxes){
+    const axes = new THREE.AxesHelper(Math.max(L,B)*0.28);
+    axes.position.set(-L/2, beamBottomY-0.05, -B/2);
+    root.add(axes);
+  }
+
+  const stackUsed = CT + CB + 4*D;
+  const residual = H - stackUsed;
+  const minTopY = Math.min(yTopXBase, yTopZBase, yTopXUnderBeam, yTopZUnderBeam);
+  const clearGap = (minTopY - dm/2) - (yBotZ + dm/2);
+  const status = clearGap >= 0
+    ? `<span class="ok">Có thể xếp hình học</span>`
+    : `<span class="warn">Xung đột hình học</span>`;
+
+  const rules = [];
+  rules.push('Đai dầm nằm ngoài và ôm cốt dọc dầm; cover dầm tính tới mặt ngoài đai');
+  rules.push('Hai phương thép lớp trên sàn được xếp lệch cao độ nhau');
+  if(omitParallel && showBeamX) rules.push('Bỏ thép sàn song song dầm X trong dải bw');
+  if(omitParallel && showBeamZ) rules.push('Bỏ thép sàn song song dầm Z trong dải bw');
+  if(!omitParallel && (showBeamX || showBeamZ)) rules.push('Giữ thép sàn song song dầm; chỉ bỏ khi hồ sơ thiết kế cho phép');
+  if(showBeamX || showBeamZ) rules.push('Thép sàn vuông góc dầm được uốn hạ cục bộ, chạy dưới thép chủ dầm rồi uốn lên lại');
+  if(showBeamX && showBeamZ) rules.push(beamPriority === 'XoverZ' ? 'Tại giao dầm: dầm X đang được thể hiện kê lên dầm Z' : 'Tại giao dầm: dầm Z đang được thể hiện kê lên dầm X');
+
+  document.getElementById('chip1').textContent = `h sàn = ${H} mm`;
+  document.getElementById('chip2').textContent = `Sàn D${D}a${A}`;
+  document.getElementById('chip3').textContent = `Dầm ${BW}×${BH} · ${showBeamX&&showBeamZ ? (beamPriority==='XoverZ' ? 'X kê lên Z' : 'Z kê lên X') : (showBeamX?'X':'Z')}`;
+
+  document.getElementById('stat').innerHTML = `
+    <b>Kiểm tra nhanh cấu tạo sàn</b><br>
+    Cover trên: ${CT} mm · Cover dưới: ${CB} mm<br>
+    4 lớp thanh tại nút giao: ${4*D} mm<br>
+    Phần còn lại: <b>${fmt(residual)} mm</b><br>
+    Khoảng hở đứng minh họa giữa 2 bó thép sàn: <b>${fmt(clearGap*1000)} mm</b><br>
+    Trạng thái: ${status}<br><br>
+
+    <b>Dầm dưới sàn</b><br>
+    Kích thước dầm: <b>${BW}×${BH} mm</b> · Cover dầm: ${BCV} mm<br>
+    Thép dọc dầm minh họa: <b>2Ø${BDIA} trên + 2Ø${BDIA} dưới</b><br>
+    Đai dầm minh họa: Ø${STDIA}a${SSUP}/${SMID} (vùng gối / giữa nhịp)<br>
+    Thứ tự từ mặt bê tông vào: <b>cover → đai → cốt dọc dầm</b><br>
+    Số đai dầm X: <b>${stirrupCountX}</b> · Số đai dầm Z: <b>${stirrupCountZ}</b><br><br>
+
+    <b>Con kê + chân chó</b><br>
+    Bước con kê: ${SK} mm · Số con kê minh họa: <b>${spacerCount}</b><br>
+    Chân chó: Ø${DC}a${AC} · Số vị trí minh họa: <b>${chairCount}</b><br><br>
+
+    <b>Quy tắc mô phỏng thép sàn – thép dầm</b><br>
+    ${rules.length ? rules.join('<br>') : 'Chưa bật dầm'}<br>
+    Thép sàn lớp trên X còn: <b>${topXCount}</b> thanh · Z còn: <b>${topZCount}</b> thanh<br>
+    Thép sàn lớp dưới X còn: <b>${botXCount}</b> thanh · Z còn: <b>${botZCount}</b> thanh<br><br>
+
+    <span style="color:#64748b">
+      Đây là mô hình minh họa nguyên tắc bố trí. Bản R10 chỉnh tiếp phần giao nhau của thép dầm:
+      thanh thép dầm phía trên được vặn xuống mượt hơn tại nút giao, còn thanh dưới vẫn giữ dạng kê lên đã ổn,
+      để tổng thể nhìn sát nhau và hợp lý hơn.
+    </span>
+  `;
+}
+
+function fitView(){
+  const L = Math.max(1, +document.getElementById('L').value || 4);
+  const B = Math.max(1, +document.getElementById('B').value || 3);
+  const BH = Math.max(200, +document.getElementById('BH').value || 400)/1000;
+  const s = Math.max(L,B, BH*5);
+  camera.position.set(s*1.15, s*0.92, s*1.25);
+  controls.target.set(0, -BH*0.18, 0);
+  controls.update();
+}
+function resize(){
+  const r = canvas.getBoundingClientRect();
+  const w = Math.max(1, r.width), h = Math.max(1, r.height);
+  if(canvas.width!==Math.floor(w*renderer.getPixelRatio()) || canvas.height!==Math.floor(h*renderer.getPixelRatio())){
+    renderer.setSize(w,h,false);
+    camera.aspect = w/h;
+    camera.updateProjectionMatrix();
+  }
+}
+function animate(){
+  resize();
+  controls.update();
+  renderer.render(scene,camera);
+  requestAnimationFrame(animate);
+}
+
+document.getElementById('updateBtn').addEventListener('click',()=>{build();fitView();});
+document.getElementById('resetBtn').addEventListener('click',fitView);
+
+[
+  'showConcrete','showTop','showBottom','showSpacer','showChair',
+  'showBeamX','showBeamZ','omitParallel','showBeamBody','showBeamSteel','showAxes','beamPriority'
+].forEach(id=>document.getElementById(id).addEventListener('change', build));
+
+['L','B','BH'].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('input', ()=>{build();fitView();});
+  el.addEventListener('change', ()=>{build();fitView();});
+});
+
+[
+  'H','D','A','CT','CB','SK','DC','AC','BW','BCV','BDIA','STDIA','SSUP','SMID','beamPriority'
+].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener('input', build);
+  el.addEventListener('change', build);
+});
+
+build(); fitView(); animate();
+</script>
+</body>
+</html>

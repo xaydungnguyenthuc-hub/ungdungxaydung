@@ -1,0 +1,3099 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thư Viện Văn Bản Pháp Luật Việt Nam - VBPL Digital Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+    <!-- Mermaid for diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <!-- html2pdf for real PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fef2f2',
+                            100: '#ffe1e1',
+                            500: '#dc2626',
+                            600: '#b91c1c',
+                            700: '#991b1b',
+                            800: '#7f1d1d',
+                            900: '#450a0a',
+                        },
+                        navy: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                        gold: {
+                            500: '#eab308',
+                            600: '#ca8a04',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ===== Base & Scrollbar ===== */
+        html { scroll-behavior: smooth; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156,163,175,0.4); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(107,114,128,0.7); }
+
+        /* ===== Legal paper (reader) ===== */
+        .legal-paper {
+            background: linear-gradient(180deg, #fffefb 0%, #fffdf8 100%);
+            box-shadow:
+                0 1px 2px rgba(0,0,0,0.04),
+                0 8px 24px -6px rgba(0,0,0,0.08),
+                0 0 0 1px rgba(0,0,0,0.03);
+        }
+        .dark .legal-paper {
+            background: linear-gradient(180deg, #0f172a 0%, #0c1322 100%);
+            box-shadow:
+                0 1px 2px rgba(0,0,0,0.2),
+                0 8px 24px -6px rgba(0,0,0,0.35),
+                0 0 0 1px rgba(255,255,255,0.04);
+        }
+
+        /* ===== Cards ===== */
+        .doc-card {
+            transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease, border-color 0.2s ease;
+            will-change: transform;
+        }
+        .doc-card:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 4px 6px -2px rgba(0,0,0,0.05),
+                0 16px 32px -8px rgba(0,0,0,0.12);
+        }
+        .dark .doc-card:hover {
+            box-shadow:
+                0 4px 6px -2px rgba(0,0,0,0.3),
+                0 16px 32px -8px rgba(0,0,0,0.45);
+        }
+
+        /* ===== Highlight ===== */
+        mark.search-highlight {
+            background: linear-gradient(120deg, #fef08a 0%, #fde047 100%);
+            color: inherit;
+            padding: 1px 3px;
+            border-radius: 3px;
+            box-decoration-break: clone;
+        }
+        .dark mark.search-highlight {
+            background: linear-gradient(120deg, #854d0e 0%, #a16207 100%);
+            color: #fef9c3;
+        }
+
+        /* ===== Reading progress ===== */
+        #readingProgress {
+            position: fixed; top: 0; left: 0; height: 2.5px;
+            background: linear-gradient(90deg, #dc2626, #f59e0b, #eab308);
+            z-index: 100; width: 0%;
+            transition: width 0.12s linear;
+            box-shadow: 0 0 8px rgba(220,38,38,0.4);
+        }
+
+        /* ===== Skeleton ===== */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.4s ease infinite;
+            border-radius: 8px;
+        }
+        .dark .skeleton {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ===== Print ===== */
+        @media print {
+            body * { visibility: hidden; }
+            #tab-detail, #tab-detail * { visibility: visible; }
+            #tab-detail { position: absolute; left: 0; top: 0; width: 100%; }
+            header, footer, #topBanner, .no-print, nav, button, #readerSubTabs, #inDocSearch { display: none !important; }
+            .legal-paper { box-shadow: none !important; border: none !important; background: white !important; }
+        }
+
+        /* ===== Autocomplete ===== */
+        .autocomplete-item {
+            transition: background 0.15s ease;
+        }
+        .autocomplete-item:hover, .autocomplete-item.active {
+            background-color: #fef2f2;
+        }
+        .dark .autocomplete-item:hover, .dark .autocomplete-item.active {
+            background-color: #1e293b;
+        }
+
+        /* ===== Reading mode ===== */
+        body.reading-mode header,
+        body.reading-mode #topBanner,
+        body.reading-mode footer,
+        body.reading-mode .lg\:col-span-1 {
+            display: none !important;
+        }
+        body.reading-mode #tab-detail .lg\:col-span-3 {
+            grid-column: span 4 / span 4;
+            max-width: 780px;
+            margin: 0 auto;
+        }
+
+        /* ===== Nav active indicator ===== */
+        .nav-btn {
+            position: relative;
+            transition: color 0.2s ease, background 0.2s ease;
+        }
+        .nav-btn.bg-navy-800::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40%;
+            height: 2px;
+            background: #dc2626;
+            border-radius: 2px;
+        }
+
+        /* ===== Soft glass panels ===== */
+        .glass-panel {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .dark .glass-panel {
+            background: rgba(15,23,42,0.75);
+        }
+
+        /* ===== Chip / badge polish ===== */
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            transition: transform 0.15s ease;
+        }
+        .chip:hover { transform: scale(1.03); }
+
+        /* ===== Button press ===== */
+        button:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        /* ===== Focus ring consistency ===== */
+        input:focus, select:focus, textarea:focus, button:focus-visible {
+            outline: none;
+        }
+
+        /* ===== Toast animation ===== */
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(12px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .toast-anim {
+            animation: toast-in 0.25s cubic-bezier(0.34,1.4,0.64,1) forwards;
+        }
+
+        /* ===== Banner shimmer ===== */
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        #topBanner > div:first-child {
+            animation: shimmer 4s linear infinite;
+        }
+
+        /* ===== Hero search glow ===== */
+        .search-glow:focus-within {
+            box-shadow:
+                0 0 0 3px rgba(220,38,38,0.15),
+                0 20px 40px -12px rgba(0,0,0,0.25);
+        }
+
+        /* ===== Diagram nodes ===== */
+        .diagram-node {
+            transition: all 0.2s ease;
+        }
+        .diagram-node:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        /* ===== Smooth tab content ===== */
+        .tab-content {
+            animation: fadeSlide 0.28s ease;
+        }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== Annotation textarea ===== */
+        textarea[placeholder="Chú thích cá nhân..."] {
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        textarea[placeholder="Chú thích cá nhân..."]:focus {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245,158,11,0.15);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-gray-800 dark:bg-slate-950 dark:text-gray-100 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Reading Progress Bar -->
+    <div id="readingProgress" class="hidden"></div>
+
+    <!-- Top VIP Access Key Notification Banner -->
+    <div id="topBanner" class="bg-gradient-to-r from-red-700 via-brand-600 to-amber-600 text-white text-xs sm:text-sm py-2 px-4 shadow-lg flex items-center justify-between relative overflow-hidden">
+        <div class="absolute inset-0 bg-[linear-gradient(110deg,transparent_25%,rgba(255,255,255,0.08)_50%,transparent_75%)] bg-[length:200%_100%] animate-[shimmer_3s_ease_infinite] pointer-events-none"></div>
+        <div class="flex items-center space-x-2 truncate pr-2">
+            <span class="bg-amber-400 text-red-950 font-bold px-2 py-0.5 rounded-full text-xs uppercase tracking-wider flex items-center gap-1">
+                <i class="fa-solid fa-key text-[10px]"></i> Access Key
+            </span>
+            <span id="keyStatusText" class="truncate font-medium">Hệ thống đang mở khóa toàn bộ nội dung Tra cứu VIP.</span>
+        </div>
+        <div class="flex items-center space-x-2 shrink-0">
+            <button onclick="openKeyModal()" class="bg-white/20 hover:bg-white/30 text-white text-xs px-2.5 py-1 rounded transition flex items-center gap-1" aria-label="Quản lý Key">
+                <i class="fa-solid fa-sliders"></i> <span class="hidden sm:inline">Quản lý Key</span>
+            </button>
+            <button onclick="dismissTopBanner()" class="text-white/70 hover:text-white p-1" aria-label="Đóng banner">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="bg-navy-900/95 backdrop-blur-md text-white sticky top-0 z-40 shadow-lg border-b border-navy-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('search')" role="button" tabindex="0">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-md border border-red-400/30">
+                        <i class="fa-solid fa-scale-balanced text-xl"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-lg sm:text-xl tracking-tight text-white">THƯ VIỆN <span class="text-brand-500">VBPL</span></span>
+                            <span id="vipBadge" class="bg-gradient-to-r from-amber-400 to-yellow-500 text-navy-900 text-[10px] font-extrabold px-1.5 py-0.5 rounded uppercase">VIP</span>
+                        </div>
+                        <p class="text-[10px] text-gray-400 hidden sm:block">Hệ Thống Kho Văn Bản Pháp Luật Điện Tử Việt Nam</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2 text-sm font-medium" role="tablist">
+                    <button onclick="switchTab('search')" id="nav-search" class="nav-btn text-white bg-navy-800 px-3 py-2 rounded-md flex items-center gap-2 transition" role="tab" aria-selected="true">
+                        <i class="fa-solid fa-magnifying-glass text-brand-500"></i> Tra cứu Văn bản
+                    </button>
+                    <button onclick="switchTab('diagram')" id="nav-diagram" class="nav-btn text-gray-300 hover:text-white hover:bg-navy-800 px-3 py-2 rounded-md flex items-center gap-2 transition" role="tab">
+                        <i class="fa-solid fa-diagram-project text-amber-400"></i> Lược đồ
+                    </button>
+                    <button onclick="switchTab('ai')" id="nav-ai" class="nav-btn text-gray-300 hover:text-white hover:bg-navy-800 px-3 py-2 rounded-md flex items-center gap-2 transition" role="tab">
+                        <i class="fa-solid fa-robot text-emerald-400"></i> Trợ lý AI
+                    </button>
+                    <button onclick="switchTab('bookmarks')" id="nav-bookmarks" class="nav-btn text-gray-300 hover:text-white hover:bg-navy-800 px-3 py-2 rounded-md flex items-center gap-2 transition" role="tab">
+                        <i class="fa-solid fa-bookmark text-blue-400"></i> Lưu trữ (<span id="savedCount">2</span>)
+                    </button>
+                    <button onclick="switchTab('recent')" id="nav-recent" class="nav-btn text-gray-300 hover:text-white hover:bg-navy-800 px-3 py-2 rounded-md flex items-center gap-2 transition" role="tab">
+                        <i class="fa-solid fa-clock-rotate-left text-purple-400"></i> Gần đây
+                    </button>
+                </nav>
+
+                <!-- Actions & Mobile Menu Button -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button onclick="toggleDarkMode()" title="Đổi giao diện Sáng/Tối" class="text-gray-300 hover:text-white p-2 rounded-lg bg-navy-800 hover:bg-slate-700 transition" aria-label="Chuyển chế độ sáng tối">
+                        <i id="themeIcon" class="fa-solid fa-moon"></i>
+                    </button>
+                    <button onclick="openAddDocModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm px-3 py-2 rounded-lg font-medium shadow transition flex items-center gap-1.5" title="Đưa văn bản pháp luật lên hệ thống">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> <span class="hidden sm:inline">Thêm VB</span>
+                    </button>
+                    <button onclick="openImportModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm px-3 py-2 rounded-lg font-medium shadow transition flex items-center gap-1.5" title="Import hàng loạt">
+                        <i class="fa-solid fa-file-import"></i> <span class="hidden lg:inline">Import</span>
+                    </button>
+                    <button onclick="openKeyModal()" class="bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm px-3 py-2 rounded-lg font-medium shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-key"></i> <span class="hidden sm:inline">Kích Hoạt Key</span>
+                    </button>
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-gray-300 hover:text-white p-2 text-lg" aria-label="Mở menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu Dropdown -->
+        <div id="mobileMenu" class="hidden md:hidden border-t border-navy-800 bg-navy-950 px-4 pt-2 pb-4 space-y-1">
+            <button onclick="switchTab('search')" class="w-full text-left text-white bg-navy-800 px-3 py-2 rounded-md flex items-center gap-2">
+                <i class="fa-solid fa-magnifying-glass text-brand-500"></i> Tra cứu Văn bản
+            </button>
+            <button onclick="switchTab('diagram')" class="w-full text-left text-gray-300 px-3 py-2 rounded-md flex items-center gap-2">
+                <i class="fa-solid fa-diagram-project text-amber-400"></i> Lược đồ
+            </button>
+            <button onclick="switchTab('ai')" class="w-full text-left text-gray-300 px-3 py-2 rounded-md flex items-center gap-2">
+                <i class="fa-solid fa-robot text-emerald-400"></i> Trợ lý AI Pháp lý
+            </button>
+            <button onclick="switchTab('bookmarks')" class="w-full text-left text-gray-300 px-3 py-2 rounded-md flex items-center gap-2">
+                <i class="fa-solid fa-bookmark text-blue-400"></i> Văn bản đã lưu
+            </button>
+            <button onclick="switchTab('recent')" class="w-full text-left text-gray-300 px-3 py-2 rounded-md flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-purple-400"></i> Xem gần đây
+            </button>
+            <button onclick="openAddDocModal(); document.getElementById('mobileMenu').classList.add('hidden');" class="w-full text-left text-emerald-400 px-3 py-2 rounded-md flex items-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Thêm / Đưa VB lên
+            </button>
+        </div>
+    </header>
+
+    <!-- Key Access Modal -->
+    <div id="keyModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden p-4" role="dialog" aria-modal="true" aria-labelledby="keyModalTitle">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700">
+            <div class="bg-gradient-to-r from-navy-900 to-brand-900 text-white p-5 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved text-amber-400 text-xl"></i>
+                    <h3 id="keyModalTitle" class="font-bold text-lg">Kích Hoạt Key Bản Quyền Access</h3>
+                </div>
+                <button onclick="closeKeyModal()" class="text-gray-300 hover:text-white p-1" aria-label="Đóng">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
+                    Nhập mã khóa truy cập (Access Token / License Key) để mở khóa toàn bộ tính năng tra cứu song ngữ, lược đồ tác động, tư vấn AI và xuất tài liệu Word/PDF.
+                </p>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-1">Mã khóa Access Key của bạn</label>
+                    <div class="relative">
+                        <textarea id="keyInput" rows="3" class="w-full p-3 bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-xl font-mono text-xs text-brand-700 dark:text-amber-300 focus:ring-2 focus:ring-brand-500 focus:outline-none resize-none" placeholder="Dán mã khóa VBPL1... vào đây" aria-label="Nhập Access Key"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center text-xs">
+                    <button onclick="pasteDefaultKey()" class="text-brand-600 dark:text-brand-400 font-semibold hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-paste"></i> Tải Key mẫu của người dùng
+                    </button>
+                    <span id="keyValidationNotice" class="text-emerald-600 dark:text-emerald-400 font-medium hidden">
+                        <i class="fa-solid fa-circle-check"></i> Key hợp lệ
+                    </span>
+                </div>
+
+                <div class="p-3 bg-amber-50 dark:bg-slate-900/60 rounded-xl border border-amber-200 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-200 flex items-start space-x-2">
+                    <i class="fa-solid fa-circle-info text-amber-500 text-sm mt-0.5"></i>
+                    <div>
+                        <strong>Thông tin cấp phép:</strong> Mã khóa mặc định từ link chia sẻ <code>VBPL1.eyJu...</code> đã được xác thực gói VIP cá nhân.
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-slate-900 px-6 py-4 flex justify-end space-x-3 border-t border-gray-100 dark:border-slate-800">
+                <button onclick="closeKeyModal()" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-lg transition">Hủy</button>
+                <button onclick="verifyAndActivateKey()" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-md transition flex items-center gap-2">
+                    <i class="fa-solid fa-check"></i> Kích Hoạt Quyền VIP
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Modal -->
+    <div id="compareModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden p-4" role="dialog" aria-modal="true">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-6xl w-full max-h-[90vh] shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700 flex flex-col">
+            <div class="bg-gradient-to-r from-navy-900 to-brand-900 text-white p-4 flex justify-between items-center shrink-0">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-code-compare text-amber-400 text-xl"></i>
+                    <h3 class="font-bold text-lg">So sánh Văn bản</h3>
+                </div>
+                <button onclick="closeCompareModal()" class="text-gray-300 hover:text-white p-1" aria-label="Đóng">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-4 flex-grow overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase mb-1 block">Văn bản A</label>
+                        <select id="compareSelectA" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-gray-500 uppercase mb-1 block">Văn bản B</label>
+                        <select id="compareSelectB" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></select>
+                    </div>
+                </div>
+                <button onclick="renderCompare()" class="mb-4 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                    <i class="fa-solid fa-code-compare mr-1"></i> So sánh ngay
+                </button>
+                <div id="compareResult" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                    <!-- Injected -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPORT BULK MODAL -->
+    <div id="importModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden p-4" role="dialog" aria-modal="true">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full max-h-[85vh] shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700 flex flex-col">
+            <div class="bg-gradient-to-r from-indigo-700 to-indigo-900 text-white p-5 flex justify-between items-center shrink-0">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-file-import text-indigo-300 text-xl"></i>
+                    <h3 class="font-bold text-lg">Import hàng loạt Văn bản</h3>
+                </div>
+                <button onclick="closeImportModal()" class="text-gray-300 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-grow space-y-3 text-sm">
+                <p class="text-xs text-gray-500 dark:text-gray-400">Dán dữ liệu theo định dạng: mỗi dòng 1 văn bản, các cột cách nhau bằng <code class="bg-gray-100 dark:bg-slate-700 px-1 rounded">Tab</code> hoặc <code class="bg-gray-100 dark:bg-slate-700 px-1 rounded">|</code></p>
+                <p class="text-[11px] text-gray-400">Thứ tự cột: <strong>Số hiệu | Tên văn bản | Loại | Cơ quan | Lĩnh vực | Ngày ban hành | Ngày hiệu lực</strong></p>
+                <textarea id="importTextarea" rows="12" class="w-full p-3 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl font-mono text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-y" placeholder="135/2025/QH15 | Luật Xây dựng 2025 | Luật | Quốc hội | Xây dựng | 10/12/2025 | 01/07/2026&#10;40/2026/TT-BXD | Thông tư hướng dẫn chi phí bảo trì | Thông tư | Bộ Xây dựng | Xây dựng | 26/06/2026 | 15/08/2026"></textarea>
+            </div>
+            <div class="bg-gray-50 dark:bg-slate-900 px-5 py-4 flex justify-end space-x-3 border-t border-gray-100 dark:border-slate-800 shrink-0">
+                <button onclick="closeImportModal()" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-lg">Hủy</button>
+                <button onclick="processBulkImport()" class="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-md flex items-center gap-2">
+                    <i class="fa-solid fa-file-import"></i> Import ngay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD / UPLOAD DOCUMENT MODAL -->
+    <div id="addDocModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden p-4" role="dialog" aria-modal="true" aria-labelledby="addDocTitle">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-3xl w-full max-h-[92vh] shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700 flex flex-col">
+            <div class="bg-gradient-to-r from-emerald-700 to-emerald-900 text-white p-5 flex justify-between items-center shrink-0">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-emerald-300 text-xl"></i>
+                    <h3 id="addDocTitle" class="font-bold text-lg">Đưa Văn Bản Pháp Luật Lên Hệ Thống</h3>
+                </div>
+                <button onclick="closeAddDocModal()" class="text-gray-300 hover:text-white p-1" aria-label="Đóng">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-5 overflow-y-auto flex-grow space-y-4 text-sm">
+                <p class="text-xs text-gray-500 dark:text-gray-400">Nhập thông tin văn bản để thêm vào kho tra cứu. Dữ liệu sẽ được lưu cục bộ (localStorage) và hiển thị ngay sau khi lưu.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Số hiệu <span class="text-red-500">*</span></label>
+                        <input type="text" id="addCode" placeholder="VD: 135/2025/QH15" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Loại văn bản <span class="text-red-500">*</span></label>
+                        <select id="addType" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Luật">Luật / Bộ Luật</option>
+                            <option value="Nghị định">Nghị định</option>
+                            <option value="Thông tư">Thông tư</option>
+                            <option value="Quyết định">Quyết định</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tên văn bản đầy đủ <span class="text-red-500">*</span></label>
+                    <input type="text" id="addTitle" placeholder="VD: Luật Xây dựng năm 2025" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Cơ quan ban hành</label>
+                        <select id="addIssuer" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Quốc hội">Quốc hội</option>
+                            <option value="Chính phủ">Chính phủ</option>
+                            <option value="Bộ Xây dựng">Bộ Xây dựng</option>
+                            <option value="Bộ Tài chính">Bộ Tài chính</option>
+                            <option value="Bộ Lao động - Thương binh và Xã hội">Bộ Lao động - TB&XH</option>
+                            <option value="Tòa án nhân dân tối cao">Tòa án nhân dân tối cao</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Lĩnh vực</label>
+                        <select id="addField" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Xây dựng">Xây dựng</option>
+                            <option value="Đất đai - Bất động sản">Đất đai - Bất động sản</option>
+                            <option value="Thuế - Kế toán">Thuế - Kế toán</option>
+                            <option value="Lao động - Tiền lương">Lao động - Tiền lương</option>
+                            <option value="Doanh nghiệp - Đầu tư">Doanh nghiệp - Đầu tư</option>
+                            <option value="Dân sự - Hình sự">Dân sự - Hình sự</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Ngày ban hành</label>
+                        <input type="text" id="addIssueDate" placeholder="DD/MM/YYYY" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Ngày hiệu lực</label>
+                        <input type="text" id="addEffectiveDate" placeholder="DD/MM/YYYY" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tình trạng</label>
+                        <select id="addStatus" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="ACTIVE">Còn hiệu lực</option>
+                            <option value="AMENDED">Bị sửa đổi, bổ sung</option>
+                            <option value="EXPIRED">Hết hiệu lực</option>
+                            <option value="PENDING">Chưa có hiệu lực</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Người ký</label>
+                    <input type="text" id="addSigner" placeholder="VD: Bộ trưởng Bộ Xây dựng" class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Tóm tắt / Trích yếu</label>
+                    <textarea id="addSummary" rows="2" placeholder="Tóm tắt ngắn gọn nội dung văn bản..." class="w-full p-2.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none resize-none"></textarea>
+                </div>
+
+                <div class="border-t border-gray-200 dark:border-slate-700 pt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-semibold text-gray-500 uppercase">Nội dung Điều (tùy chọn)</label>
+                        <button type="button" onclick="addArticleRow()" class="text-xs text-emerald-600 hover:underline font-medium">
+                            <i class="fa-solid fa-plus"></i> Thêm Điều
+                        </button>
+                    </div>
+                    <div id="articleRows" class="space-y-3">
+                        <!-- Dynamic article rows -->
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-4 text-xs">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="addHasBilingual" class="rounded text-emerald-600 focus:ring-emerald-500">
+                        Có bản song ngữ
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="addHasDiagram" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+                        Có lược đồ quan hệ
+                    </label>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 dark:bg-slate-900 px-5 py-4 flex justify-between items-center border-t border-gray-100 dark:border-slate-800 shrink-0">
+                <button onclick="clearAddDocForm()" class="text-xs text-gray-500 hover:text-red-500 transition">
+                    <i class="fa-solid fa-eraser"></i> Xóa form
+                </button>
+                <div class="flex space-x-3">
+                    <button onclick="closeAddDocModal()" class="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-800 rounded-lg transition">Hủy</button>
+                    <button onclick="submitAddDocument()" class="px-5 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Đưa lên hệ thống
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: SEARCH & DIRECTORY -->
+        <section id="tab-search" class="tab-content space-y-6">
+            
+            <!-- Hero Search Box - Redesigned -->
+            <div class="bg-gradient-to-br from-navy-900 via-navy-800 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-16 -bottom-16 w-80 h-80 bg-brand-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-10 top-10 w-48 h-48 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="absolute right-1/4 top-0 w-32 h-32 bg-red-500/5 rounded-full blur-2xl pointer-events-none"></div>
+                
+                <div class="max-w-3xl space-y-5 relative z-10">
+                    <div class="inline-flex items-center space-x-2 bg-white/10 text-amber-200 text-xs px-3.5 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">
+                        <i class="fa-solid fa-sparkles text-amber-400"></i>
+                        <span class="font-medium">Cơ sở dữ liệu hơn 250,000+ Văn bản Pháp luật Việt Nam</span>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.15]">Tra cứu Luật, Nghị định<br class="hidden sm:block">& Thông tư</h1>
+                    <p class="text-gray-300/90 text-sm leading-relaxed max-w-xl">Tra cứu chính xác số hiệu, tên văn bản, trích yếu hoặc từ khóa pháp lý. Hỗ trợ song ngữ & lược đồ quan hệ.</p>
+
+                    <!-- Search Input Bar with Autocomplete -->
+                    <div class="relative mt-2">
+                        <div class="search-glow flex items-center bg-white dark:bg-slate-800 rounded-2xl p-1.5 sm:p-2 shadow-2xl border border-white/20 dark:border-slate-600/50 transition-shadow duration-300">
+                            <i class="fa-solid fa-magnifying-glass text-gray-400 ml-3 text-lg"></i>
+                            <input type="text" id="searchInput" onkeyup="handleSearchInput(event)" onfocus="showAutocomplete()" placeholder="Nhập tên luật (VD: Đất đai 2024, Thuế TNDN, Lao động)..." class="w-full px-3 py-3 bg-transparent text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none text-sm sm:text-base" autocomplete="off" aria-label="Tìm kiếm văn bản">
+                            <button onclick="clearSearch()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 px-2 text-sm hidden" id="clearSearchBtn" aria-label="Xóa tìm kiếm">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </button>
+                            <button onclick="filterDocuments()" class="bg-brand-600 hover:bg-brand-700 active:bg-brand-800 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md transition text-sm flex items-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-magnifying-glass text-xs opacity-80"></i>
+                                <span>Tìm kiếm</span>
+                            </button>
+                        </div>
+                        <!-- Autocomplete Dropdown -->
+                        <div id="autocompleteDropdown" class="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-200 dark:border-slate-700 max-h-64 overflow-y-auto z-50 hidden">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+
+                    <!-- Popular Search Chips -->
+                    <div class="flex flex-wrap items-center gap-2 pt-1 text-xs text-gray-300">
+                        <span class="text-gray-400 font-medium"><i class="fa-solid fa-fire text-amber-400 mr-1"></i>Từ khóa hot:</span>
+                        <button onclick="setSearchKeyword('Luật Xây dựng')" class="bg-white/10 hover:bg-white/20 hover:scale-105 px-2.5 py-1 rounded-lg transition-all duration-150">Luật Xây dựng</button>
+                        <button onclick="setSearchKeyword('Luật Đất đai 2024')" class="bg-white/10 hover:bg-white/20 hover:scale-105 px-2.5 py-1 rounded-lg transition-all duration-150">Luật Đất đai 2024</button>
+                        <button onclick="setSearchKeyword('Nghị định 123')" class="bg-white/10 hover:bg-white/20 hover:scale-105 px-2.5 py-1 rounded-lg transition-all duration-150">Nghị định 123/2020</button>
+                        <button onclick="setSearchKeyword('Bộ luật Lao động')" class="bg-white/10 hover:bg-white/20 hover:scale-105 px-2.5 py-1 rounded-lg transition-all duration-150">Bộ luật Lao động</button>
+                        <button onclick="setSearchKeyword('Thuế GTGT')" class="bg-white/10 hover:bg-white/20 hover:scale-105 px-2.5 py-1 rounded-lg transition-all duration-150">Thuế GTGT</button>
+                        <button onclick="openCompareModal()" class="bg-amber-500/20 hover:bg-amber-500/30 hover:scale-105 text-amber-200 px-2.5 py-1 rounded-lg transition-all duration-150 flex items-center gap-1.5 border border-amber-500/20">
+                            <i class="fa-solid fa-code-compare text-[10px]"></i> So sánh VB
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters & Main Results Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <!-- Filter Sidebar -->
+                <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700/80 space-y-5 h-fit">
+                    <div class="flex justify-between items-center border-b border-gray-100 dark:border-slate-700 pb-3">
+                        <h3 class="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-filter text-brand-600"></i> Bộ Lọc Tìm Kiếm
+                        </h3>
+                        <button onclick="resetFilters()" class="text-xs text-brand-600 dark:text-brand-400 font-medium hover:underline">Xóa bộ lọc</button>
+                    </div>
+
+                    <!-- Status Filter - FIXED default -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Tình trạng hiệu lực</label>
+                        <select id="filterStatus" onchange="filterDocuments()" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="ALL" selected>-- Tất cả hiệu lực --</option>
+                            <option value="ACTIVE">Còn hiệu lực</option>
+                            <option value="EXPIRED">Hết hiệu lực</option>
+                            <option value="AMENDED">Bị sửa đổi, bổ sung</option>
+                            <option value="PENDING">Chưa có hiệu lực</option>
+                        </select>
+                    </div>
+
+                    <!-- Issuing Authority -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Cơ quan ban hành</label>
+                        <select id="filterIssuer" onchange="filterDocuments()" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="ALL">-- Tất cả cơ quan --</option>
+                            <option value="Quốc hội">Quốc hội</option>
+                            <option value="Chính phủ">Chính phủ</option>
+                            <option value="Bộ Xây dựng">Bộ Xây dựng</option>
+                            <option value="Bộ Tài chính">Bộ Tài chính</option>
+                            <option value="Bộ Lao động - Thương binh và Xã hội">Bộ Lao động - TB&XH</option>
+                            <option value="Tòa án nhân dân tối cao">Tòa án nhân dân tối cao</option>
+                        </select>
+                    </div>
+
+                    <!-- Document Type -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Loại văn bản</label>
+                        <select id="filterType" onchange="filterDocuments()" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="ALL">-- Tất cả loại văn bản --</option>
+                            <option value="Luật">Luật / Bộ Luật</option>
+                            <option value="Nghị định">Nghị định</option>
+                            <option value="Thông tư">Thông tư</option>
+                            <option value="Quyết định">Quyết định</option>
+                        </select>
+                    </div>
+
+                    <!-- Field Filter -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Lĩnh vực</label>
+                        <select id="filterField" onchange="filterDocuments()" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                            <option value="ALL">-- Tất cả lĩnh vực --</option>
+                            <option value="Xây dựng">Xây dựng</option>
+                            <option value="Đất đai - Bất động sản">Đất đai - Bất động sản</option>
+                            <option value="Thuế - Kế toán">Thuế - Kế toán</option>
+                            <option value="Lao động - Tiền lương">Lao động - Tiền lương</option>
+                            <option value="Doanh nghiệp - Đầu tư">Doanh nghiệp - Đầu tư</option>
+                            <option value="Dân sự - Hình sự">Dân sự - Hình sự</option>
+                        </select>
+                    </div>
+
+                    <div class="p-3 bg-blue-50 dark:bg-slate-900 rounded-xl border border-blue-100 dark:border-slate-700 text-xs text-blue-900 dark:text-blue-300">
+                        <div class="font-bold flex items-center gap-1 mb-1">
+                            <i class="fa-solid fa-headset text-blue-600"></i> Hỗ trợ pháp lý nhanh
+                        </div>
+                        <p class="text-[11px] text-blue-700 dark:text-blue-400">Bạn cần tư vấn trích dẫn khoản điều chính xác? Sử dụng Trợ lý AI ở tab bên trên.</p>
+                    </div>
+                </div>
+
+                <!-- Document Results List -->
+                <div class="lg:col-span-3 space-y-4">
+                    <!-- Status Header Bar -->
+                    <div class="flex flex-wrap items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 gap-2">
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">
+                            Tìm thấy <strong id="docCount" class="text-brand-600 dark:text-brand-400 text-sm">0</strong> văn bản pháp luật phù hợp
+                        </span>
+                        <div class="flex items-center flex-wrap gap-2 text-xs">
+                            <button id="btnFullText" onclick="toggleFullTextSearch()" class="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-brand-600 hover:text-white transition font-medium" title="Tìm trong toàn bộ nội dung Điều">
+                                <i class="fa-solid fa-align-left mr-1"></i> Full-text
+                            </button>
+                            <button onclick="document.getElementById('statsPanel').classList.toggle('hidden'); renderStats();" class="px-2.5 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-emerald-600 hover:text-white transition font-medium">
+                                <i class="fa-solid fa-chart-pie mr-1"></i> Thống kê
+                            </button>
+                            <span class="text-gray-400">Sắp xếp:</span>
+                            <select id="sortBy" onchange="filterDocuments()" class="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-1.5 focus:outline-none">
+                                <option value="NEWEST">Ban hành mới nhất</option>
+                                <option value="EFFECTIVE">Ngày hiệu lực</option>
+                                <option value="RELEVANCE">Độ tương quan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Stats Panel (collapsible) -->
+                    <div id="statsPanel" class="hidden bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
+                        <div id="statsContent"></div>
+                    </div>
+
+                    <!-- Container for document cards -->
+                    <div id="documentList" class="space-y-4">
+                        <!-- Injected via JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: DETAILED DOCUMENT READER - Redesigned -->
+        <section id="tab-detail" class="tab-content hidden space-y-6">
+            <!-- Reader Control Toolbar -->
+            <div class="flex flex-wrap items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 gap-3 sticky top-20 z-30 no-print">
+                <button onclick="switchTab('search')" class="text-xs font-semibold text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 flex items-center gap-1.5 bg-gray-100 dark:bg-slate-700 px-3 py-1.5 rounded-lg transition">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại tìm kiếm
+                </button>
+
+                <div id="readerSubTabs" class="flex items-center bg-gray-100 dark:bg-slate-900 p-1 rounded-xl text-xs font-medium">
+                    <button onclick="switchReaderTab('text')" id="rtab-text" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-brand-600 dark:text-amber-400 shadow-sm transition">Nội dung Văn bản</button>
+                    <button onclick="switchReaderTab('bilingual')" id="rtab-bilingual" class="px-3 py-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">Song ngữ Anh - Việt</button>
+                    <button onclick="switchReaderTab('diagram')" id="rtab-diagram" class="px-3 py-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition">Lược đồ Liên quan</button>
+                </div>
+
+                <div class="flex items-center space-x-1 text-xs">
+                    <!-- Font size controls -->
+                    <button onclick="changeFontSize(-1)" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:text-brand-600 transition" title="Giảm cỡ chữ" aria-label="Giảm cỡ chữ">
+                        <span class="font-bold text-xs">A-</span>
+                    </button>
+                    <button onclick="changeFontSize(1)" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:text-brand-600 transition" title="Tăng cỡ chữ" aria-label="Tăng cỡ chữ">
+                        <span class="font-bold text-sm">A+</span>
+                    </button>
+                    <button onclick="toggleReadingMode()" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:text-brand-600 transition" title="Chế độ đọc" aria-label="Chế độ đọc">
+                        <i class="fa-solid fa-book-open text-base"></i>
+                    </button>
+                    <button onclick="toggleBookmarkCurrent()" id="btnBookmarkDetail" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:text-amber-500 transition" title="Lưu văn bản" aria-label="Lưu văn bản">
+                        <i class="fa-regular fa-bookmark text-base"></i>
+                    </button>
+                    <button onclick="printDocument()" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:text-brand-600 transition" title="In" aria-label="In">
+                        <i class="fa-solid fa-print text-base"></i>
+                    </button>
+                    <button onclick="exportPDF()" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:text-red-600 transition" title="Xuất PDF" aria-label="Xuất PDF">
+                        <i class="fa-solid fa-file-pdf text-base"></i>
+                    </button>
+                    <button onclick="downloadWordReal()" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:text-blue-600 transition" title="Tải Word (.doc)" aria-label="Tải Word">
+                        <i class="fa-solid fa-file-word text-base"></i>
+                    </button>
+                    <button onclick="copyDeepLink()" class="p-2 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:text-purple-600 transition" title="Copy link sâu" aria-label="Copy link">
+                        <i class="fa-solid fa-link text-base"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Document Container Layout -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                
+                <!-- Left Outline / Table of Contents -->
+                <div class="lg:col-span-1 bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 h-fit max-h-[80vh] overflow-y-auto sticky top-40 space-y-4 no-print">
+                    <h4 class="font-bold text-xs uppercase text-gray-400 tracking-wider flex items-center justify-between">
+                        <span>Mục lục Văn bản</span>
+                        <i class="fa-solid fa-list-ul"></i>
+                    </h4>
+                    <div id="documentOutline" class="space-y-1 text-xs">
+                        <!-- Outline list generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right Paper Document -->
+                <div class="lg:col-span-3 space-y-6">
+                    
+                    <!-- Paper Content Card -->
+                    <div class="legal-paper p-6 sm:p-10 rounded-2xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-gray-100 min-h-[600px] relative" id="documentPaper">
+                        
+                        <!-- Metadata Header -->
+                        <div id="docDetailHeader" class="border-b border-gray-200 dark:border-slate-700 pb-6 mb-6 space-y-4">
+                            <!-- Injected JS -->
+                        </div>
+
+                        <!-- Search within Text Bar -->
+                        <div class="mb-6 bg-gray-50 dark:bg-slate-900 p-3 rounded-xl border border-gray-200 dark:border-slate-700 flex items-center justify-between no-print">
+                            <div class="flex items-center space-x-2 text-xs flex-grow mr-2">
+                                <i class="fa-solid fa-magnifying-glass text-gray-400"></i>
+                                <input type="text" id="inDocSearch" placeholder="Tìm kiếm cụm từ trong nội dung văn bản này..." onkeyup="highlightDocText()" class="bg-transparent border-none focus:outline-none w-full text-xs text-gray-800 dark:text-gray-200" aria-label="Tìm trong văn bản">
+                            </div>
+                            <span id="matchCount" class="text-[11px] font-semibold text-brand-600 dark:text-brand-400 whitespace-nowrap"></span>
+                        </div>
+
+                        <!-- Dynamic Viewer Sub-Views -->
+                        <div id="readerSubViewText" class="prose dark:prose-invert max-w-none space-y-6 text-sm leading-relaxed font-serif" style="font-size: 15px;">
+                            <!-- Text Injected JS -->
+                        </div>
+
+                        <div id="readerSubViewBilingual" class="hidden space-y-4">
+                            <div class="bg-amber-50 dark:bg-slate-900 p-3 rounded-xl border border-amber-200 dark:border-slate-700 text-xs text-amber-900 dark:text-amber-300 flex items-center gap-2">
+                                <i class="fa-solid fa-language text-lg text-amber-600"></i>
+                                <span>Chế độ đối chiếu văn bản Song ngữ Việt - Anh bản quyền VIP.</span>
+                            </div>
+                            <div id="bilingualContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm font-sans">
+                                <!-- Injected JS -->
+                            </div>
+                        </div>
+
+                        <div id="readerSubViewDiagram" class="hidden space-y-6">
+                            <div class="p-4 bg-slate-900 rounded-xl text-white">
+                                <h4 class="font-bold text-sm mb-2 text-amber-400"><i class="fa-solid fa-sitemap mr-2"></i>Lược đồ Mối quan hệ Pháp lý</h4>
+                                <p class="text-xs text-gray-300">Biểu đồ thể hiện Văn bản căn cứ, Văn bản hướng dẫn thực thi và Các văn bản sửa đổi bổ sung liên quan (dùng Mermaid).</p>
+                            </div>
+                            <div id="inDocDiagramContainer" class="p-4 bg-gray-50 dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 overflow-x-auto">
+                                <!-- Mermaid diagram injected -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: LEGAL DIAGRAM / LƯỢC ĐỒ PHÁP LUẬT -->
+        <section id="tab-diagram" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-700 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-amber-500"></i> Lược Đồ Tác Động Văn Bản Pháp Luật
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Trực quan hóa hệ thống phân cấp: Bộ luật / Luật → Nghị định Hướng dẫn → Thông tư Quy định Chi tiết (Mermaid).</p>
+                    </div>
+
+                    <div class="flex items-center space-x-3 text-xs">
+                        <label class="font-semibold text-gray-600 dark:text-gray-300">Chọn Luật Trung Tâm:</label>
+                        <select id="diagramSelectDoc" onchange="renderGlobalDiagram()" class="bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2 font-medium">
+                            <!-- Filled dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Canvas / Mermaid Visualizer Box -->
+                <div class="bg-slate-900 rounded-2xl p-6 min-h-[500px] flex flex-col items-center justify-center relative overflow-hidden text-white border border-slate-700">
+                    <div class="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] opacity-40"></div>
+                    
+                    <div id="globalDiagramCanvas" class="w-full relative z-10 overflow-x-auto">
+                        <!-- Mermaid rendered by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-gray-600 dark:text-gray-300 pt-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-brand-600 inline-block"></span> Văn bản Gốc (Luật)
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span> Nghị định Quy định Chi tiết
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span> Thông tư Hướng dẫn
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-purple-600 inline-block"></span> Văn bản Liên quan
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: AI LEGAL ASSISTANT -->
+        <section id="tab-ai" class="tab-content hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- AI Info Column -->
+                <div class="lg:col-span-1 bg-gradient-to-br from-navy-900 to-slate-900 p-6 rounded-2xl text-white space-y-5 shadow-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl border border-emerald-500/30">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Trợ Lý Pháp Lý AI</h3>
+                            <span class="text-xs text-emerald-400 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sẵn sàng giải đáp 24/7
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="text-xs text-gray-300 leading-relaxed">
+                        Trợ lý AI được huấn luyện trên toàn bộ hệ thống văn bản quy phạm pháp luật Việt Nam. Hỗ trợ tra cứu nhanh điều khoản, trích dẫn pháp lý chính xác và tóm tắt nội dung quy định.
+                    </p>
+
+                    <div class="space-y-2 pt-2 border-t border-slate-700">
+                        <label class="text-xs font-semibold uppercase text-gray-400">Câu hỏi gợi ý nhanh:</label>
+                        <div class="space-y-2 text-xs">
+                            <button onclick="askAIQuestion('Đất không có giấy tờ sử dụng trước năm 2004 có được cấp Sổ đỏ theo Luật Đất đai 2024 không?')" class="w-full text-left bg-white/10 hover:bg-white/20 p-2.5 rounded-xl transition text-gray-200">
+                                📌 Đất sử dụng trước 2004 có được cấp Sổ đỏ 2024?
+                            </button>
+                            <button onclick="askAIQuestion('Mức trợ cấp thất nghiệp tối đa được tính như thế nào theo Luật Lao động?')" class="w-full text-left bg-white/10 hover:bg-white/20 p-2.5 rounded-xl transition text-gray-200">
+                                📌 Mức trợ cấp thất nghiệp tối đa tính ra sao?
+                            </button>
+                            <button onclick="askAIQuestion('Nghị định 123 quy định về thời điểm xuất hóa đơn điện tử dịch vụ như thế nào?')" class="w-full text-left bg-white/10 hover:bg-white/20 p-2.5 rounded-xl transition text-gray-200">
+                                📌 Thời điểm xuất hóa đơn điện tử dịch vụ?
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Dialog Area -->
+                <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 flex flex-col h-[550px]">
+                    <!-- Chat Header -->
+                    <div class="p-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-900 rounded-t-2xl">
+                        <span class="font-bold text-xs uppercase text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                            <i class="fa-solid fa-comments text-emerald-500"></i> Hộp hội thoại Tư vấn
+                        </span>
+                        <button onclick="clearAIChat()" class="text-xs text-gray-400 hover:text-red-500 transition">
+                            <i class="fa-solid fa-trash-can"></i> Xóa lịch sử chat
+                        </button>
+                    </div>
+
+                    <!-- Chat Messages List -->
+                    <div id="aiChatBox" class="flex-grow p-4 overflow-y-auto space-y-4 text-xs sm:text-sm">
+                        <!-- Initial Greeting -->
+                        <div class="flex items-start space-x-3">
+                            <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold text-xs">AI</div>
+                            <div class="bg-gray-100 dark:bg-slate-700/80 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-gray-800 dark:text-gray-100 space-y-1">
+                                <p class="font-semibold text-xs text-emerald-600 dark:text-emerald-400">Trợ Lý Pháp Luật VBPL:</p>
+                                <p>Xin chào! Tôi có thể giúp gì cho bạn về việc tra cứu luật, nghị định, mức phạt hay quy định pháp lý Việt Nam hôm nay?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="p-3 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 rounded-b-2xl">
+                        <form onsubmit="handleAISubmit(event)" class="flex items-center gap-2">
+                            <input type="text" id="aiInput" placeholder="Nhập câu hỏi pháp lý của bạn ở đây..." class="flex-grow bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" aria-label="Câu hỏi AI">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl transition flex items-center gap-1 shrink-0">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span class="hidden sm:inline">Gửi</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: SAVED BOOKMARKS -->
+        <section id="tab-bookmarks" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 space-y-6">
+                <div class="flex justify-between items-center border-b border-gray-100 dark:border-slate-700 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-bookmark text-blue-500"></i> Văn Bản Đã Lưu Cá Nhân
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Danh sách các văn bản pháp luật bạn đã đánh dấu quan tâm.</p>
+                    </div>
+                </div>
+
+                <div id="bookmarkList" class="space-y-4">
+                    <!-- Injected JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 6: RECENT DOCUMENTS (New) -->
+        <section id="tab-recent" class="tab-content hidden space-y-6">
+            <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 space-y-6">
+                <div class="flex justify-between items-center border-b border-gray-100 dark:border-slate-700 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-purple-500"></i> Văn Bản Xem Gần Đây
+                        </h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Lịch sử các văn bản bạn đã mở trong phiên này (lưu localStorage).</p>
+                    </div>
+                    <button onclick="clearRecent()" class="text-xs text-red-500 hover:text-red-700 font-medium">Xóa lịch sử</button>
+                </div>
+
+                <div id="recentList" class="space-y-4">
+                    <!-- Injected JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-navy-950 text-gray-400 text-xs py-8 border-t border-navy-800 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-6 h-6 rounded bg-brand-600 text-white flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <span class="font-bold text-white tracking-wide">THƯ VIỆN VBPL DIGITAL PORTAL</span>
+                </div>
+                <div class="flex space-x-4">
+                    <a href="#" class="hover:text-white transition">Điều khoản sử dụng</a>
+                    <a href="#" class="hover:text-white transition">Chính sách bảo mật</a>
+                    <a href="#" class="hover:text-white transition">Hướng dẫn kích hoạt Key</a>
+                </div>
+            </div>
+            <p class="text-center sm:text-left text-gray-500">
+                © 2026 Thư Viện Văn Bản Pháp Luật Điện Tử. Bản quyền dịch vụ dữ liệu chuẩn hóa pháp lý.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        /* ============================================================
+           VBPL Digital Portal - Modular JS Structure
+           ============================================================ */
+
+        // -------------------- 1. DATA & STATE --------------------
+        const DEFAULT_ACCESS_KEY = "VBPL1.eyJuIjoiU0hBUkUgQ0FOSEFOIiwiciI6IlUiLCJpIjoiTVBMWUdYIiwiZSI6MzE3MH0.WAsJCve0YKVVfQJH5fS8ZDwIEd2qS-Ag2f4O4JvsIrjyZH5cvgPesqKY_17-j0RZaBA0XxxIwbIJM3r2NjNnmg";
+
+        const documentDatabase = [
+            {
+                id: "doc-31-2024-qh15",
+                code: "31/2024/QH15",
+                title: "Luật Đất đai 2024",
+                type: "Luật",
+                issuer: "Quốc hội",
+                field: "Đất đai - Bất động sản",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "18/01/2024",
+                effectiveDate: "01/08/2024",
+                signer: "Vương Đình Huệ",
+                summary: "Luật này quy định về chế độ sở hữu đất đai, quyền hạn và trách nhiệm của Nhà nước đại diện chủ sở hữu toàn dân về đất đai và thống nhất quản lý về đất đai...",
+                hasBilingual: true,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Luật này quy định về chế độ sở hữu đất đai, quyền hạn và trách nhiệm của Nhà nước đại diện chủ sở hữu toàn dân về đất đai và thống nhất quản lý về đất đai, chế độ quản lý và sử dụng đất đai, quyền và nghĩa vụ của người sử dụng đất đối với đất đai thuộc lãnh thổ của nước Cộng hòa xã hội chủ nghĩa Việt Nam.",
+                        enContent: "This Law prescribes the land ownership regime, powers and responsibilities of the State representing the entire-people owner of land and uniformly managing land, the regime of land management and use, and the rights and obligations of land users."
+                    },
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 2. Đối tượng áp dụng",
+                        content: "1. Cơ quan nhà nước thực hiện quyền hạn và trách nhiệm đại diện chủ sở hữu toàn dân về đất đai, cơ quan quản lý nhà nước về đất đai.\n2. Người sử dụng đất.\n3. Các đối tượng khác có liên quan đến việc quản lý, sử dụng đất đai.",
+                        enContent: "1. State agencies exercising powers and responsibilities representing the entire-people owner of land.\n2. Land users.\n3. Other entities related to land management and use."
+                    },
+                    {
+                        chapter: "Chương II: QUYỀN VÀ TRÁCH NHIỆM CỦA NHÀ NƯỚC",
+                        title: "Điều 13. Quyền của Nhà nước đối với đất đai",
+                        content: "1. Quyết định quy hoạch, kế hoạch sử dụng đất.\n2. Quyết định mục đích sử dụng đất.\n3. Quyết định giao đất, cho thuê đất, thu hồi đất, chuyển mục đích sử dụng đất.\n4. Quyết định giá đất.",
+                        enContent: "1. Decide on land use master plans and plans.\n2. Decide on land use purposes.\n3. Decide on land allocation, land lease, land recovery.\n4. Decide on land prices."
+                    }
+                ],
+                relations: {
+                    base: [],
+                    decrees: ["Nghị định 101/2024/NĐ-CP (Đăng ký đất đai)", "Nghị định 102/2024/NĐ-CP (Hướng dẫn thi hành Luật Đất đai)"],
+                    circulars: ["Thông tư 10/2024/TT-BTNMT (Hồ sơ địa chính)"]
+                }
+            },
+            {
+                id: "doc-123-2020-nd-cp",
+                code: "123/2020/NĐ-CP",
+                title: "Nghị định 123/2020/NĐ-CP quy định về hóa đơn, chứng từ",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Thuế - Kế toán",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "19/10/2020",
+                effectiveDate: "01/07/2022",
+                signer: "Nguyễn Xuân Phúc",
+                summary: "Nghị định quy định việc quản lý, sử dụng hóa đơn khi bán hàng hóa, cung cấp dịch vụ; việc quản lý, sử dụng chứng từ khi thực hiện các thủ tục về thuế, phí, lệ phí...",
+                hasBilingual: true,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định về việc quản lý, sử dụng hóa đơn khi bán hàng hóa, cung cấp dịch vụ; việc quản lý, sử dụng chứng từ khi thực hiện các thủ tục về thuế, phí, lệ phí và quy định nhiệm vụ, quyền hạn của cơ quan quản lý thuế...",
+                        enContent: "This Decree provisions the management and use of e-invoices when selling goods and providing services..."
+                    },
+                    {
+                        chapter: "Chương II: HÓA ĐƠN ĐIỆN TỬ",
+                        title: "Điều 9. Thời điểm lập hóa đơn",
+                        content: "1. Thời điểm lập hóa đơn đối với bán hàng hóa là thời điểm chuyển giao quyền sở hữu hoặc quyền sử dụng hàng hóa cho người mua, không phân biệt đã thu được tiền hay chưa thu được tiền.\n2. Thời điểm lập hóa đơn đối với cung cấp dịch vụ là thời điểm hoàn thành việc cung cấp dịch vụ...",
+                        enContent: "1. The time of invoice issuance for sale of goods is the time when ownership or right to use goods is transferred to the buyer...\n2. The time of invoice issuance for service provision is the time when service completion is reached..."
+                    }
+                ],
+                relations: {
+                    base: ["Luật Quản lý thuế 2019"],
+                    decrees: [],
+                    circulars: ["Thông tư 78/2021/TT-BTC (Hướng dẫn Nghị định 123)"]
+                }
+            },
+            {
+                id: "doc-45-2019-qh14",
+                code: "45/2019/QH14",
+                title: "Bộ luật Lao động 2019",
+                type: "Luật",
+                issuer: "Quốc hội",
+                field: "Lao động - Tiền lương",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "20/11/2019",
+                effectiveDate: "01/01/2021",
+                signer: "Nguyễn Thị Kim Ngân",
+                summary: "Bộ luật Lao động quy định tiêu chuẩn lao động; quyền, nghĩa vụ, trách nhiệm của người lao động, người sử dụng đất, tổ chức đại diện người lao động tại cơ sở...",
+                hasBilingual: true,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương III: HỢP ĐỒNG LAO ĐỘNG",
+                        title: "Điều 13. Hợp đồng lao động",
+                        content: "1. Hợp đồng lao động là sự thỏa thuận giữa người lao động và người sử dụng lao động về việc làm có trả công, tiền lương, điều kiện lao động, quyền và nghĩa vụ của mỗi bên trong quan hệ lao động.",
+                        enContent: "1. An employment contract is an agreement between an employee and an employer on paid work, salary, working conditions, and rights and obligations of each party."
+                    },
+                    {
+                        chapter: "Chương III: HỢP ĐỒNG LAO ĐỘNG",
+                        title: "Điều 20. Loại hợp đồng lao động",
+                        content: "1. Hợp đồng lao động không xác định thời hạn.\n2. Hợp đồng lao động xác định thời hạn (không quá 36 tháng).",
+                        enContent: "1. Indefinite-term employment contract.\n2. Definite-term employment contract (not exceeding 36 months)."
+                    }
+                ],
+                relations: {
+                    base: [],
+                    decrees: ["Nghị định 145/2020/NĐ-CP (Hướng dẫn Bộ luật Lao động)"],
+                    circulars: ["Thông tư 10/2020/TT-BLĐTBXH"]
+                }
+            },
+            {
+                id: "doc-59-2020-qh14",
+                code: "59/2020/QH14",
+                title: "Luật Doanh nghiệp 2020",
+                type: "Luật",
+                issuer: "Quốc hội",
+                field: "Doanh nghiệp - Đầu tư",
+                status: "AMENDED",
+                statusText: "Bị sửa đổi, bổ sung",
+                issueDate: "17/06/2020",
+                effectiveDate: "01/01/2021",
+                signer: "Nguyễn Thị Kim Ngân",
+                summary: "Luật này quy định về việc thành lập, tổ chức quản lý, tổ chức lại, giải thể và hoạt động có liên quan của doanh nghiệp...",
+                hasBilingual: true,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 4. Giải thích từ ngữ",
+                        content: "1. 'Doanh nghiệp' là tổ chức có tên riêng, có tài sản, có trụ sở giao dịch, được thành lập hoặc đăng ký thành lập theo quy định của pháp luật nhằm mục đích kinh doanh.",
+                        enContent: "1. 'Enterprise' means an organization with a proper name, assets, transaction office, established or registered for establishment for business purposes."
+                    }
+                ],
+                relations: {
+                    base: [],
+                    decrees: ["Nghị định 01/2021/NĐ-CP (Đăng ký doanh nghiệp)"],
+                    circulars: []
+                }
+            },
+            // ===== VĂN BẢN XÂY DỰNG BỔ SUNG =====
+            {
+                id: "doc-135-2025-qh15",
+                code: "135/2025/QH15",
+                title: "Luật Xây dựng của Quốc hội, số 135/2025/QH15",
+                type: "Luật",
+                issuer: "Quốc hội",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "10/12/2025",
+                effectiveDate: "01/07/2026",
+                signer: "Chủ tịch Quốc hội",
+                summary: "Luật Xây dựng quy định về hoạt động xây dựng; quyền, nghĩa vụ và trách nhiệm của cơ quan, tổ chức, cá nhân trong hoạt động xây dựng.",
+                hasBilingual: true,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Luật này quy định về hoạt động xây dựng; quyền, nghĩa vụ và trách nhiệm của cơ quan, tổ chức, cá nhân trong hoạt động xây dựng trên lãnh thổ nước Cộng hòa xã hội chủ nghĩa Việt Nam.",
+                        enContent: "This Law regulates construction activities; rights, obligations and responsibilities of agencies, organizations and individuals in construction activities."
+                    }
+                ],
+                relations: {
+                    base: [],
+                    decrees: ["Nghị định 217/2026/NĐ-CP", "Nghị định 207/2026/NĐ-CP", "Nghị định 212/2026/NĐ-CP"],
+                    circulars: ["Thông tư 40/2026/TT-BXD", "Thông tư 39/2026/TT-BXD"]
+                }
+            },
+            {
+                id: "doc-40-2026-tt-bxd",
+                code: "40/2026/TT-BXD",
+                title: "Thông tư 40/2026/TT-BXD của Bộ Xây dựng hướng dẫn xác định chi phí bảo trì công trình xây dựng",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "26/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Hướng dẫn xác định chi phí bảo trì công trình xây dựng theo quy định của pháp luật về xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này hướng dẫn xác định chi phí bảo trì công trình xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-39-2026-tt-bxd",
+                code: "39/2026/TT-BXD",
+                title: "Thông tư 39/2026/TT-BXD của Bộ Xây dựng hướng dẫn một số nội dung chi tiết trong Hệ thống thông tin, Cơ sở dữ liệu quốc gia về hoạt động xây dựng",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "26/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Hướng dẫn một số nội dung chi tiết trong Hệ thống thông tin, Cơ sở dữ liệu quốc gia về hoạt động xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này hướng dẫn một số nội dung chi tiết trong Hệ thống thông tin, Cơ sở dữ liệu quốc gia về hoạt động xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15", "Nghị định 212/2026/NĐ-CP"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-38-2026-tt-bxd",
+                code: "38/2026/TT-BXD",
+                title: "Thông tư 38/2026/TT-BXD của Bộ Xây dựng ban hành định mức xây dựng",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "26/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Ban hành định mức xây dựng áp dụng trong hoạt động xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này ban hành định mức xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-37-2026-tt-bxd",
+                code: "37/2026/TT-BXD",
+                title: "Thông tư 37/2026/TT-BXD của Bộ Xây dựng hướng dẫn phương pháp xác định định mức dự toán và các chỉ tiêu kinh tế kỹ thuật",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "26/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Hướng dẫn phương pháp xác định định mức dự toán và các chỉ tiêu kinh tế kỹ thuật trong xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này hướng dẫn phương pháp xác định định mức dự toán và các chỉ tiêu kinh tế kỹ thuật.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-33-2026-tt-bxd",
+                code: "33/2026/TT-BXD",
+                title: "Thông tư 33/2026/TT-BXD của Bộ Xây dựng quy định chi tiết một số nội dung về đánh giá an toàn công trình trong quá trình khai thác, sử dụng đối với các công trình thuộc thẩm quyền quản lý của Bộ Xây dựng",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "25/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Quy định chi tiết một số nội dung về đánh giá an toàn công trình trong quá trình khai thác, sử dụng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này quy định chi tiết một số nội dung về đánh giá an toàn công trình trong quá trình khai thác, sử dụng đối với các công trình thuộc thẩm quyền quản lý của Bộ Xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-36-2026-tt-bxd",
+                code: "36/2026/TT-BXD",
+                title: "Thông tư 36/2026/TT-BXD của Bộ Xây dựng hướng dẫn một số nội dung, phương pháp xác định và quản lý chi phí đầu tư xây dựng",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "26/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Hướng dẫn một số nội dung, phương pháp xác định và quản lý chi phí đầu tư xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này hướng dẫn một số nội dung, phương pháp xác định và quản lý chi phí đầu tư xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15", "Nghị định 206/2026/NĐ-CP"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-1040-2026-qd-bxd",
+                code: "1040/QĐ-BXD",
+                title: "Quyết định 1040/QĐ-BXD của Bộ Xây dựng công bố mẫu hợp đồng xây dựng",
+                type: "Quyết định",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "26/06/2026",
+                effectiveDate: "15/07/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Công bố mẫu hợp đồng xây dựng áp dụng trong hoạt động xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "QUYẾT ĐỊNH",
+                        title: "Điều 1. Công bố mẫu hợp đồng",
+                        content: "Công bố mẫu hợp đồng xây dựng kèm theo Quyết định này.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15", "Nghị định 210/2026/NĐ-CP"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-41-2026-tt-bxd",
+                code: "41/2026/TT-BXD",
+                title: "Thông tư 41/2026/TT-BXD của Bộ Xây dựng quản lý chất lượng sản phẩm, hàng hóa vật liệu xây dựng",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "26/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Quy định về quản lý chất lượng sản phẩm, hàng hóa vật liệu xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này quy định về quản lý chất lượng sản phẩm, hàng hóa vật liệu xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15", "Nghị định 209/2026/NĐ-CP"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-34-2026-tt-bxd",
+                code: "34/2026/TT-BXD",
+                title: "Thông tư 34/2026/TT-BXD của Bộ Xây dựng quy định chi tiết về cấp công trình xây dựng phục vụ quản lý hoạt động xây dựng",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "25/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Quy định chi tiết về cấp công trình xây dựng phục vụ quản lý hoạt động xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này quy định chi tiết về cấp công trình xây dựng phục vụ quản lý hoạt động xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-220-2026-nd-cp",
+                code: "220/2026/NĐ-CP",
+                title: "Nghị định 220/2026/NĐ-CP của Chính phủ sửa đổi, bổ sung một số điều của Nghị định 67/2023/NĐ-CP ngày 06/9/2023 của Chính phủ quy định về bảo hiểm bắt buộc trách nhiệm dân sự của chủ xe cơ giới, bảo hiểm cháy, nổ bắt buộc, bảo hiểm bắt buộc trong hoạt động đầu tư xây dựng",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "22/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Sửa đổi, bổ sung một số điều của Nghị định 67/2023/NĐ-CP về bảo hiểm bắt buộc trong hoạt động đầu tư xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này sửa đổi, bổ sung một số điều của Nghị định số 67/2023/NĐ-CP ngày 06 tháng 9 năm 2023 của Chính phủ.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Nghị định 67/2023/NĐ-CP"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-32-2026-tt-bxd",
+                code: "32/2026/TT-BXD",
+                title: "Thông tư 32/2026/TT-BXD của Bộ Xây dựng quy định chi tiết một số điều của Nghị định 207/2026/NĐ-CP ngày 15/6/2026 của Chính phủ quy định chi tiết một số điều của Luật Xây dựng về quản lý chất lượng, thi công xây dựng và bảo trì công trình xây dựng",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "22/06/2026",
+                effectiveDate: "15/08/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Quy định chi tiết một số điều của Nghị định 207/2026/NĐ-CP về quản lý chất lượng, thi công xây dựng và bảo trì công trình xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này quy định chi tiết một số điều của Nghị định 207/2026/NĐ-CP về quản lý chất lượng, thi công xây dựng và bảo trì công trình xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Nghị định 207/2026/NĐ-CP", "Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-217-2026-nd-cp",
+                code: "217/2026/NĐ-CP",
+                title: "Nghị định 217/2026/NĐ-CP của Chính phủ quy định chi tiết một số điều của Luật Xây dựng về quản lý hoạt động xây dựng",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "19/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Quy định chi tiết một số điều của Luật Xây dựng về quản lý hoạt động xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định chi tiết một số điều của Luật Xây dựng về quản lý hoạt động xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: ["Thông tư 34/2026/TT-BXD"]
+                }
+            },
+            {
+                id: "doc-212-2026-nd-cp",
+                code: "212/2026/NĐ-CP",
+                title: "Nghị định 212/2026/NĐ-CP của Chính phủ quy định về điều kiện năng lực hoạt động xây dựng, Hệ thống thông tin, Cơ sở dữ liệu quốc gia về hoạt động xây dựng",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "17/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Quy định về điều kiện năng lực hoạt động xây dựng, Hệ thống thông tin, Cơ sở dữ liệu quốc gia về hoạt động xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định về điều kiện năng lực hoạt động xây dựng, Hệ thống thông tin, Cơ sở dữ liệu quốc gia về hoạt động xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: ["Thông tư 39/2026/TT-BXD"]
+                }
+            },
+            {
+                id: "doc-205-2026-nd-cp",
+                code: "205/2026/NĐ-CP",
+                title: "Nghị định 205/2026/NĐ-CP của Chính phủ về cảng hàng không và bãi cất, hạ cánh",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "15/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Quy định về cảng hàng không và bãi cất, hạ cánh.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định về cảng hàng không và bãi cất, hạ cánh.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: [],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-207-2026-nd-cp",
+                code: "207/2026/NĐ-CP",
+                title: "Nghị định 207/2026/NĐ-CP của Chính phủ quy định chi tiết một số điều của Luật Xây dựng về quản lý chất lượng, thi công xây dựng và bảo trì công trình xây dựng",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "15/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Quy định chi tiết một số điều của Luật Xây dựng về quản lý chất lượng, thi công xây dựng và bảo trì công trình xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định chi tiết một số điều của Luật Xây dựng về quản lý chất lượng, thi công xây dựng và bảo trì công trình xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: ["Thông tư 32/2026/TT-BXD", "Thông tư 40/2026/TT-BXD"]
+                }
+            },
+            {
+                id: "doc-209-2026-nd-cp",
+                code: "209/2026/NĐ-CP",
+                title: "Nghị định 209/2026/NĐ-CP của Chính phủ quy định chi tiết một số điều và biện pháp thi hành Luật Xây dựng về quản lý vật liệu xây dựng",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "15/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Quy định chi tiết một số điều và biện pháp thi hành Luật Xây dựng về quản lý vật liệu xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định chi tiết một số điều và biện pháp thi hành Luật Xây dựng về quản lý vật liệu xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: ["Thông tư 41/2026/TT-BXD"]
+                }
+            },
+            {
+                id: "doc-210-2026-nd-cp",
+                code: "210/2026/NĐ-CP",
+                title: "Nghị định 210/2026/NĐ-CP của Chính phủ quy định chi tiết và hướng dẫn thi hành một số điều của Luật Xây dựng về hợp đồng xây dựng",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "15/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Quy định chi tiết và hướng dẫn thi hành một số điều của Luật Xây dựng về hợp đồng xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định chi tiết và hướng dẫn thi hành một số điều của Luật Xây dựng về hợp đồng xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: ["Quyết định 1040/QĐ-BXD"]
+                }
+            },
+            {
+                id: "doc-206-2026-nd-cp",
+                code: "206/2026/NĐ-CP",
+                title: "Nghị định 206/2026/NĐ-CP của Chính phủ quy định chi tiết về quản lý chi phí đầu tư xây dựng",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "15/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Quy định chi tiết về quản lý chi phí đầu tư xây dựng.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định chi tiết về quản lý chi phí đầu tư xây dựng.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: ["Luật Xây dựng 135/2025/QH15"],
+                    decrees: [],
+                    circulars: ["Thông tư 36/2026/TT-BXD"]
+                }
+            },
+            {
+                id: "doc-193-2026-nd-cp",
+                code: "193/2026/NĐ-CP",
+                title: "Nghị định 193/2026/NĐ-CP của Chính phủ quy định về quyết toán vốn đầu tư dự án",
+                type: "Nghị định",
+                issuer: "Chính phủ",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "01/06/2026",
+                effectiveDate: "01/08/2026",
+                signer: "Thủ tướng Chính phủ",
+                summary: "Quy định về quyết toán vốn đầu tư dự án.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Nghị định này quy định về quyết toán vốn đầu tư dự án.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: [],
+                    decrees: [],
+                    circulars: []
+                }
+            },
+            {
+                id: "doc-21-2026-tt-bxd",
+                code: "21/2026/TT-BXD",
+                title: "Thông tư 21/2026/TT-BXD của Bộ Xây dựng quy định về quản lý kết cấu hạ tầng đường thủy nội địa",
+                type: "Thông tư",
+                issuer: "Bộ Xây dựng",
+                field: "Xây dựng",
+                status: "ACTIVE",
+                statusText: "Còn hiệu lực",
+                issueDate: "15/05/2026",
+                effectiveDate: "01/07/2026",
+                signer: "Bộ trưởng Bộ Xây dựng",
+                summary: "Quy định về quản lý kết cấu hạ tầng đường thủy nội địa.",
+                hasBilingual: false,
+                hasDiagram: true,
+                isVip: true,
+                articles: [
+                    {
+                        chapter: "Chương I: QUY ĐỊNH CHUNG",
+                        title: "Điều 1. Phạm vi điều chỉnh",
+                        content: "Thông tư này quy định về quản lý kết cấu hạ tầng đường thủy nội địa.",
+                        enContent: ""
+                    }
+                ],
+                relations: {
+                    base: [],
+                    decrees: [],
+                    circulars: []
+                }
+            }
+        ];
+
+        // State
+        let currentDocument = null;
+        let savedDocIds = JSON.parse(localStorage.getItem('vbpl_saved') || '["doc-31-2024-qh15","doc-123-2020-nd-cp"]');
+        let recentDocIds = JSON.parse(localStorage.getItem('vbpl_recent') || '[]');
+        let pinnedDocIds = JSON.parse(localStorage.getItem('vbpl_pinned') || '[]');
+        let annotations = JSON.parse(localStorage.getItem('vbpl_annotations') || '{}'); // { docId: { artIdx: "note" } }
+        let isKeyActivated = true;
+        let activeKey = DEFAULT_ACCESS_KEY;
+        let currentFontSize = 15;
+        let isReadingMode = false;
+        let originalTextContent = ''; // for highlight restore
+        let editingDocId = null; // null = add mode, string = edit mode
+        let fullTextSearch = false;
+
+        // -------------------- 2. INITIALIZATION --------------------
+        window.addEventListener('DOMContentLoaded', () => {
+            mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+            initAccessKey();
+            loadUserDocuments(); // Load documents previously uploaded by user
+            renderDocumentList(documentDatabase);
+            renderGlobalDiagramOptions();
+            renderSavedBookmarks();
+            renderRecentList();
+            populateCompareSelects();
+            // Do NOT auto-open detail on load (fixed)
+            updateSavedCount();
+            handleDeepLink(); // Open ?doc=xxx if present
+        });
+
+        // -------------------- 3. KEY / ACCESS --------------------
+        function initAccessKey() {
+            const storedKey = localStorage.getItem('vbpl_access_key') || DEFAULT_ACCESS_KEY;
+            activeKey = storedKey;
+            document.getElementById('keyInput').value = storedKey;
+            updateKeyUIState(true);
+        }
+
+        function pasteDefaultKey() {
+            document.getElementById('keyInput').value = DEFAULT_ACCESS_KEY;
+        }
+
+        function verifyAndActivateKey() {
+            const inputVal = document.getElementById('keyInput').value.trim();
+            // Slightly stronger validation
+            if (inputVal.length > 20 && inputVal.startsWith("VBPL1.") && inputVal.includes(".")) {
+                localStorage.setItem('vbpl_access_key', inputVal);
+                activeKey = inputVal;
+                updateKeyUIState(true);
+                closeKeyModal();
+                showToast("Kích hoạt Access Key thành công! Đã nâng cấp tài khoản VIP.");
+            } else {
+                alert("Mã khóa Access Key không đúng định dạng. Vui lòng thử lại!");
+            }
+        }
+
+        function updateKeyUIState(isVIP) {
+            isKeyActivated = isVIP;
+            const statusText = document.getElementById('keyStatusText');
+            const validationNotice = document.getElementById('keyValidationNotice');
+            
+            if (isVIP) {
+                statusText.innerHTML = `<span class="text-amber-300 font-bold"><i class="fa-solid fa-crown mr-1"></i> VIP Full Access:</span> Đã mở khóa lượt xem song ngữ, lược đồ tác động và tư vấn AI.`;
+                validationNotice.classList.remove('hidden');
+            } else {
+                statusText.innerHTML = `Chế độ dùng thử cơ bản. Nhập Access Key để nâng cấp VIP.`;
+                validationNotice.classList.add('hidden');
+            }
+        }
+
+        function openKeyModal() {
+            document.getElementById('keyModal').classList.remove('hidden');
+        }
+
+        function closeKeyModal() {
+            document.getElementById('keyModal').classList.add('hidden');
+        }
+
+        function dismissTopBanner() {
+            document.getElementById('topBanner').classList.add('hidden');
+        }
+
+        // -------------------- 4. NAVIGATION --------------------
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(`tab-${tabId}`);
+            if (target) target.classList.remove('hidden');
+
+            // Update Nav UI
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-navy-800', 'text-white');
+                btn.classList.add('text-gray-300');
+                btn.setAttribute('aria-selected', 'false');
+            });
+
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-navy-800', 'text-white');
+                activeBtn.classList.remove('text-gray-300');
+                activeBtn.setAttribute('aria-selected', 'true');
+            }
+
+            // Close mobile menu
+            document.getElementById('mobileMenu').classList.add('hidden');
+
+            // Progress bar only on detail
+            document.getElementById('readingProgress').classList.toggle('hidden', tabId !== 'detail');
+
+            if (tabId === 'diagram') renderGlobalDiagram();
+            if (tabId === 'recent') renderRecentList();
+            if (tabId === 'bookmarks') renderSavedBookmarks();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+
+        // -------------------- 5. SEARCH & FILTER --------------------
+        function setSearchKeyword(keyword) {
+            document.getElementById('searchInput').value = keyword;
+            hideAutocomplete();
+            filterDocuments();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            hideAutocomplete();
+            filterDocuments();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterStatus').value = 'ALL';
+            document.getElementById('filterIssuer').value = 'ALL';
+            document.getElementById('filterType').value = 'ALL';
+            document.getElementById('filterField').value = 'ALL';
+            hideAutocomplete();
+            filterDocuments();
+        }
+
+        function handleSearchInput(e) {
+            if (e.key === 'Enter') {
+                hideAutocomplete();
+                filterDocuments();
+                return;
+            }
+            showAutocomplete();
+            filterDocuments();
+        }
+
+        function showAutocomplete() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+            const dropdown = document.getElementById('autocompleteDropdown');
+            if (!keyword) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+            const matches = documentDatabase.filter(d => 
+                d.title.toLowerCase().includes(keyword) || 
+                d.code.toLowerCase().includes(keyword)
+            ).slice(0, 6);
+
+            if (matches.length === 0) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            dropdown.innerHTML = matches.map(d => `
+                <div class="autocomplete-item px-4 py-2.5 cursor-pointer text-sm border-b border-gray-100 dark:border-slate-700 last:border-0" onclick="setSearchKeyword('${d.title.replace(/'/g, "\\'")}')">
+                    <span class="font-semibold text-brand-600 dark:text-amber-400">${d.code}</span>
+                    <span class="text-gray-700 dark:text-gray-200 ml-2">${d.title}</span>
+                </div>
+            `).join('');
+            dropdown.classList.remove('hidden');
+        }
+
+        function hideAutocomplete() {
+            document.getElementById('autocompleteDropdown').classList.add('hidden');
+        }
+
+        // Click outside to close autocomplete
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#searchInput') && !e.target.closest('#autocompleteDropdown')) {
+                hideAutocomplete();
+            }
+        });
+
+        function filterDocuments() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+            const status = document.getElementById('filterStatus').value;
+            const issuer = document.getElementById('filterIssuer').value;
+            const type = document.getElementById('filterType').value;
+            const field = document.getElementById('filterField').value;
+
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', keyword === '');
+
+            // Show skeleton briefly for UX
+            const container = document.getElementById('documentList');
+            container.innerHTML = Array(3).fill(0).map(() => `
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-slate-700 space-y-3">
+                    <div class="skeleton h-4 w-1/3"></div>
+                    <div class="skeleton h-6 w-3/4"></div>
+                    <div class="skeleton h-3 w-full"></div>
+                    <div class="skeleton h-3 w-2/3"></div>
+                </div>
+            `).join('');
+
+            setTimeout(() => {
+                const filtered = documentDatabase.filter(doc => {
+                    let matchKeyword = keyword === '' || 
+                        doc.title.toLowerCase().includes(keyword) || 
+                        doc.code.toLowerCase().includes(keyword) || 
+                        doc.summary.toLowerCase().includes(keyword);
+
+                    // Full-text search inside articles
+                    if (!matchKeyword && fullTextSearch && keyword) {
+                        matchKeyword = (doc.articles || []).some(a => 
+                            (a.title || '').toLowerCase().includes(keyword) ||
+                            (a.content || '').toLowerCase().includes(keyword) ||
+                            (a.chapter || '').toLowerCase().includes(keyword)
+                        );
+                    }
+
+                    const matchStatus = status === 'ALL' || doc.status === status;
+                    const matchIssuer = issuer === 'ALL' || doc.issuer === issuer;
+                    const matchType = type === 'ALL' || doc.type === type;
+                    const matchField = field === 'ALL' || doc.field === field;
+
+                    return matchKeyword && matchStatus && matchIssuer && matchType && matchField;
+                });
+
+                // Sort: pinned first, then by selected order
+                const sortBy = document.getElementById('sortBy').value;
+                filtered.sort((a, b) => {
+                    const pinA = pinnedDocIds.includes(a.id) ? 1 : 0;
+                    const pinB = pinnedDocIds.includes(b.id) ? 1 : 0;
+                    if (pinB !== pinA) return pinB - pinA;
+                    if (sortBy === 'NEWEST') return parseDate(b.issueDate) - parseDate(a.issueDate);
+                    if (sortBy === 'EFFECTIVE') return parseDate(b.effectiveDate) - parseDate(a.effectiveDate);
+                    return 0;
+                });
+
+                renderDocumentList(filtered);
+            }, 180);
+        }
+
+        function parseDate(str) {
+            const [d, m, y] = str.split('/').map(Number);
+            return new Date(y, m - 1, d).getTime();
+        }
+
+        function renderDocumentList(docs) {
+            const container = document.getElementById('documentList');
+            document.getElementById('docCount').innerText = docs.length;
+
+            if (docs.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl text-center text-gray-500 border border-gray-100 dark:border-slate-700">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-300"></i>
+                        <p class="font-medium">Không tìm thấy văn bản phù hợp với tiêu chí lọc.</p>
+                        <button onclick="resetFilters()" class="mt-3 px-4 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold">Xóa tất cả bộ lọc</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = docs.map(doc => {
+                const isSaved = savedDocIds.includes(doc.id);
+                const isPinned = pinnedDocIds.includes(doc.id);
+                let badgeColor = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300';
+                if (doc.status === 'EXPIRED') badgeColor = 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300';
+                if (doc.status === 'AMENDED') badgeColor = 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300';
+
+                let typeIcon = 'fa-file-lines';
+                if (doc.type === 'Luật') typeIcon = 'fa-scale-balanced';
+                if (doc.type === 'Nghị định') typeIcon = 'fa-file-contract';
+                if (doc.type === 'Thông tư') typeIcon = 'fa-file-alt';
+
+                const editDeleteBtns = doc.isUserAdded ? `
+                    <button onclick="editDocument('${doc.id}')" class="text-xs text-blue-500 hover:text-blue-700 transition" title="Chỉnh sửa"><i class="fa-solid fa-pen"></i></button>
+                    <button onclick="deleteDocument('${doc.id}')" class="text-xs text-red-500 hover:text-red-700 transition" title="Xóa"><i class="fa-solid fa-trash-can"></i></button>
+                ` : '';
+
+                return `
+                    <div class="doc-card bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border ${isPinned ? 'border-amber-400 dark:border-amber-500 ring-1 ring-amber-300/50' : 'border-gray-100 dark:border-slate-700/80'} space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center space-x-2 flex-wrap">
+                                ${isPinned ? '<span class="text-[10px] font-bold bg-amber-400 text-navy-900 px-1.5 py-0.5 rounded"><i class="fa-solid fa-thumbtack"></i> Ghim</span>' : ''}
+                                <span class="text-xs font-bold bg-navy-800 text-amber-300 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                    <i class="fa-solid ${typeIcon} text-[10px]"></i> ${doc.code}
+                                </span>
+                                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${badgeColor}">${doc.statusText}</span>
+                                <span class="text-[11px] bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full">${doc.type}</span>
+                                ${doc.isUserAdded ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 px-1.5 py-0.5 rounded font-bold">Tự thêm</span>' : ''}
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button onclick="togglePin('${doc.id}')" class="text-xs ${isPinned ? 'text-amber-500' : 'text-gray-400 hover:text-amber-500'} transition" title="${isPinned ? 'Bỏ ghim' : 'Ghim lên đầu'}">
+                                    <i class="fa-solid fa-thumbtack"></i>
+                                </button>
+                                <button onclick="toggleBookmark('${doc.id}')" class="text-xs ${isSaved ? 'text-amber-500 font-bold' : 'text-gray-400 hover:text-amber-500'} transition flex items-center gap-1">
+                                    <i class="fa-${isSaved ? 'solid' : 'regular'} fa-bookmark"></i>
+                                </button>
+                                ${editDeleteBtns}
+                            </div>
+                        </div>
+
+                        <h3 onclick="openDocumentDetail('${doc.id}')" class="font-bold text-base text-gray-900 dark:text-white hover:text-brand-600 dark:hover:text-amber-400 cursor-pointer transition line-clamp-2">
+                            ${doc.title}
+                        </h3>
+
+                        <p class="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">
+                            ${doc.summary}
+                        </p>
+
+                        <div class="flex flex-wrap items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-700/60 text-[11px] text-gray-500 dark:text-gray-400 gap-2">
+                            <div class="flex items-center space-x-4">
+                                <span><i class="fa-solid fa-building mr-1"></i>${doc.issuer}</span>
+                                <span><i class="fa-solid fa-calendar-check mr-1"></i>Hiệu lực: ${doc.effectiveDate}</span>
+                            </div>
+
+                            <div class="flex items-center space-x-2">
+                                ${doc.hasBilingual ? '<span class="bg-blue-50 text-blue-700 dark:bg-slate-700 dark:text-blue-300 px-1.5 py-0.5 rounded text-[10px] font-bold">Song ngữ</span>' : ''}
+                                ${doc.hasDiagram ? '<span class="bg-amber-50 text-amber-700 dark:bg-slate-700 dark:text-amber-300 px-1.5 py-0.5 rounded text-[10px] font-bold">Lược đồ</span>' : ''}
+                                <button onclick="openDocumentDetail('${doc.id}')" class="text-brand-600 dark:text-amber-400 font-bold hover:underline flex items-center gap-1 ml-2">
+                                    Xem chi tiết <i class="fa-solid fa-angle-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // -------------------- 6. DOCUMENT READER --------------------
+        function openDocumentDetail(docId) {
+            const doc = documentDatabase.find(d => d.id === docId);
+            if (!doc) return;
+
+            currentDocument = doc;
+            addToRecent(docId);
+            switchTab('detail');
+
+            // Bookmark button state
+            const isSaved = savedDocIds.includes(doc.id);
+            document.getElementById('btnBookmarkDetail').className = `p-2 rounded-lg bg-gray-100 dark:bg-slate-700 ${isSaved ? 'text-amber-500' : 'text-gray-600 dark:text-gray-300'} hover:text-amber-500 transition`;
+            document.getElementById('btnBookmarkDetail').innerHTML = `<i class="fa-${isSaved ? 'solid' : 'regular'} fa-bookmark text-base"></i>`;
+
+            // Header
+            document.getElementById('docDetailHeader').innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xs font-extrabold bg-brand-600 text-white px-3 py-1 rounded-lg">${doc.code}</span>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">${doc.statusText}</span>
+                </div>
+                <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white font-serif leading-snug">
+                    ${doc.title}
+                </h2>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 dark:bg-slate-900/80 p-3.5 rounded-xl text-xs font-sans">
+                    <div><span class="text-gray-400 block">Cơ quan ban hành:</span> <strong>${doc.issuer}</strong></div>
+                    <div><span class="text-gray-400 block">Ngày ban hành:</span> <strong>${doc.issueDate}</strong></div>
+                    <div><span class="text-gray-400 block">Ngày có hiệu lực:</span> <strong>${doc.effectiveDate}</strong></div>
+                    <div><span class="text-gray-400 block">Người ký:</span> <strong>${doc.signer}</strong></div>
+                </div>
+            `;
+
+            // Outline TOC
+            const outlineContainer = document.getElementById('documentOutline');
+            outlineContainer.innerHTML = doc.articles.map((art, idx) => `
+                <a href="#art-${idx}" class="block py-1.5 px-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded transition text-gray-700 dark:text-gray-300 line-clamp-1">
+                    ${art.title}
+                </a>
+            `).join('');
+
+            // Main text with copy buttons + annotations
+            const textContainer = document.getElementById('readerSubViewText');
+            textContainer.innerHTML = doc.articles.map((art, idx) => `
+                <div id="art-${idx}" class="space-y-2 border-b border-gray-100 dark:border-slate-800 pb-4 group">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <p class="text-xs font-bold text-brand-700 dark:text-amber-400 uppercase tracking-wider font-sans">${art.chapter}</p>
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white font-serif">${art.title}</h3>
+                        </div>
+                        <button onclick="copyArticle(${idx})" class="opacity-0 group-hover:opacity-100 transition text-xs text-gray-400 hover:text-brand-600 p-1.5 rounded-lg bg-gray-100 dark:bg-slate-700 no-print" title="Sao chép điều">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                    <p class="whitespace-pre-line text-gray-800 dark:text-gray-200 article-content">${art.content}</p>
+                    ${renderAnnotationInput(doc.id, idx)}
+                </div>
+            `).join('');
+            originalTextContent = textContainer.innerHTML;
+            updateDeepLink(doc.id);
+
+            // Bilingual
+            const bilingualContainer = document.getElementById('bilingualContainer');
+            bilingualContainer.innerHTML = doc.articles.map((art) => `
+                <div class="p-3 bg-gray-50 dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 space-y-1">
+                    <span class="text-[10px] font-bold text-brand-600 dark:text-brand-400 uppercase">Tiếng Việt</span>
+                    <h5 class="font-bold text-xs">${art.title}</h5>
+                    <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">${art.content}</p>
+                </div>
+                <div class="p-3 bg-blue-50/50 dark:bg-slate-800/80 rounded-xl border border-blue-100 dark:border-slate-700 space-y-1">
+                    <span class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">English Translation</span>
+                    <h5 class="font-bold text-xs">${art.title}</h5>
+                    <p class="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">${art.enContent || 'Translation updating...'}</p>
+                </div>
+            `).join('');
+
+            // Mermaid diagram in-doc
+            renderInDocMermaid(doc);
+
+            switchReaderTab('text');
+            // Reset search highlight
+            document.getElementById('inDocSearch').value = '';
+            document.getElementById('matchCount').innerText = '';
+        }
+
+        function switchReaderTab(subTab) {
+            document.getElementById('readerSubViewText').classList.add('hidden');
+            document.getElementById('readerSubViewBilingual').classList.add('hidden');
+            document.getElementById('readerSubViewDiagram').classList.add('hidden');
+
+            document.querySelectorAll('#readerSubTabs button').forEach(b => {
+                b.className = 'px-3 py-1.5 rounded-lg text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition';
+            });
+
+            if (subTab === 'text') {
+                document.getElementById('readerSubViewText').classList.remove('hidden');
+                document.getElementById('rtab-text').className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-brand-600 dark:text-amber-400 shadow-sm transition font-bold';
+            } else if (subTab === 'bilingual') {
+                document.getElementById('readerSubViewBilingual').classList.remove('hidden');
+                document.getElementById('rtab-bilingual').className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-brand-600 dark:text-amber-400 shadow-sm transition font-bold';
+            } else if (subTab === 'diagram') {
+                document.getElementById('readerSubViewDiagram').classList.remove('hidden');
+                document.getElementById('rtab-diagram').className = 'px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-brand-600 dark:text-amber-400 shadow-sm transition font-bold';
+            }
+        }
+
+        // Real highlight with <mark>
+        function highlightDocText() {
+            const query = document.getElementById('inDocSearch').value.trim();
+            const textContainer = document.getElementById('readerSubViewText');
+            
+            // Restore original
+            textContainer.innerHTML = originalTextContent;
+
+            if (!query) {
+                document.getElementById('matchCount').innerText = '';
+                return;
+            }
+
+            const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+            let matchCount = 0;
+
+            textContainer.querySelectorAll('.article-content').forEach(p => {
+                const text = p.textContent;
+                const newHtml = text.replace(regex, (match) => {
+                    matchCount++;
+                    return `<mark class="search-highlight">${match}</mark>`;
+                });
+                p.innerHTML = newHtml;
+            });
+
+            document.getElementById('matchCount').innerText = matchCount > 0 ? `Tìm thấy ${matchCount} cụm từ` : 'Không tìm thấy';
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function copyArticle(idx) {
+            if (!currentDocument) return;
+            const art = currentDocument.articles[idx];
+            const text = `${art.title}\n\n${art.content}`;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Đã sao chép điều vào clipboard!');
+            }).catch(() => {
+                showToast('Không thể sao chép. Hãy thử lại.');
+            });
+        }
+
+        function changeFontSize(delta) {
+            currentFontSize = Math.max(12, Math.min(22, currentFontSize + delta));
+            document.getElementById('readerSubViewText').style.fontSize = currentFontSize + 'px';
+        }
+
+        function toggleReadingMode() {
+            isReadingMode = !isReadingMode;
+            document.body.classList.toggle('reading-mode', isReadingMode);
+            showToast(isReadingMode ? 'Đã bật chế độ đọc tập trung' : 'Đã tắt chế độ đọc');
+        }
+
+        // Reading progress
+        window.addEventListener('scroll', () => {
+            if (document.getElementById('tab-detail').classList.contains('hidden')) return;
+            const paper = document.getElementById('documentPaper');
+            if (!paper) return;
+            const rect = paper.getBoundingClientRect();
+            const total = paper.offsetHeight - window.innerHeight;
+            const progress = Math.min(100, Math.max(0, ((-rect.top) / total) * 100));
+            document.getElementById('readingProgress').style.width = progress + '%';
+        });
+
+        // -------------------- 7. MERMAID DIAGRAMS --------------------
+        function renderInDocMermaid(doc) {
+            const container = document.getElementById('inDocDiagramContainer');
+            let mermaidCode = `graph TD\n`;
+            mermaidCode += `    A["${doc.title}<br/>${doc.code}"]:::main\n`;
+
+            if (doc.relations.base.length > 0) {
+                doc.relations.base.forEach((b, i) => {
+                    mermaidCode += `    B${i}["${b}"]:::base --> A\n`;
+                });
+            }
+            doc.relations.decrees.forEach((d, i) => {
+                mermaidCode += `    A --> D${i}["${d}"]:::decree\n`;
+            });
+            doc.relations.circulars.forEach((c, i) => {
+                mermaidCode += `    A --> C${i}["${c}"]:::circular\n`;
+            });
+
+            mermaidCode += `
+                classDef main fill:#dc2626,stroke:#991b1b,color:#fff,stroke-width:2px
+                classDef base fill:#7c3aed,stroke:#5b21b6,color:#fff
+                classDef decree fill:#2563eb,stroke:#1d4ed8,color:#fff
+                classDef circular fill:#059669,stroke:#047857,color:#fff
+            `;
+
+            container.innerHTML = `<pre class="mermaid">${mermaidCode}</pre>`;
+            mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
+        }
+
+        function renderGlobalDiagramOptions() {
+            const select = document.getElementById('diagramSelectDoc');
+            select.innerHTML = documentDatabase.map(doc => `
+                <option value="${doc.id}">${doc.title}</option>
+            `).join('');
+        }
+
+        function renderGlobalDiagram() {
+            const docId = document.getElementById('diagramSelectDoc').value || documentDatabase[0].id;
+            const doc = documentDatabase.find(d => d.id === docId);
+            const container = document.getElementById('globalDiagramCanvas');
+
+            let mermaidCode = `graph TD\n`;
+            mermaidCode += `    MAIN["${doc.title}<br/>(${doc.code})"]:::main\n`;
+
+            if (doc.relations.base.length > 0) {
+                doc.relations.base.forEach((b, i) => {
+                    mermaidCode += `    BASE${i}["${b}"]:::base --> MAIN\n`;
+                });
+            }
+            doc.relations.decrees.forEach((d, i) => {
+                mermaidCode += `    MAIN --> DEC${i}["${d}"]:::decree\n`;
+            });
+            doc.relations.circulars.forEach((c, i) => {
+                mermaidCode += `    MAIN --> CIR${i}["${c}"]:::circular\n`;
+            });
+
+            mermaidCode += `
+                classDef main fill:#dc2626,stroke:#fbbf24,color:#fff,stroke-width:3px
+                classDef base fill:#7c3aed,stroke:#c4b5fd,color:#fff
+                classDef decree fill:#2563eb,stroke:#93c5fd,color:#fff
+                classDef circular fill:#059669,stroke:#6ee7b7,color:#fff
+            `;
+
+            container.innerHTML = `<div class="flex justify-center"><pre class="mermaid">${mermaidCode}</pre></div>`;
+            mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
+        }
+
+        // -------------------- 8. AI ASSISTANT --------------------
+        function askAIQuestion(questionText) {
+            document.getElementById('aiInput').value = questionText;
+            handleAISubmit(new Event('submit'));
+        }
+
+        function handleAISubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('aiInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatBox = document.getElementById('aiChatBox');
+
+            chatBox.innerHTML += `
+                <div class="flex items-start justify-end space-x-3">
+                    <div class="bg-brand-600 text-white p-3.5 rounded-2xl rounded-tr-none max-w-[85%] space-y-1">
+                        <p>${message}</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-navy-800 text-amber-400 flex items-center justify-center shrink-0 font-bold text-xs">Bạn</div>
+                </div>
+            `;
+
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            setTimeout(() => {
+                let aiResponse = "Theo hệ thống quy phạm pháp luật hiện hành Việt Nam, câu hỏi của bạn được giải đáp dựa trên các văn bản quy định chi tiết như sau:\n\n";
+
+                if (message.includes("Đất") || message.includes("Sổ đỏ")) {
+                    aiResponse += "1. Căn cứ **Điều 138 Luật Đất đai 2024 (số 31/2024/QH15)**:\n- Hộ gia đình, cá nhân đang sử dụng đất trước ngày 01/07/2004 không có giấy tờ về quyền sử dụng đất nhưng không vi phạm pháp luật về đất đai và được UBND cấp xã xác nhận không có tranh chấp thì **ĐƯỢC CẤP GIẤY CHỨNG NHẬN (Sổ đỏ)**.\n2. Lệ phí và tiền sử dụng đất được tính theo bảng giá đất niêm yết hiện hành.";
+                } else if (message.includes("thất nghiệp") || message.includes("Lao động")) {
+                    aiResponse += "1. Căn cứ **Bộ luật Lao động 2019** và **Luật Việc làm**:\n- Mức hưởng trợ cấp thất nghiệp hằng tháng bằng **60%** mức bình quân tiền lương tháng đóng bảo hiểm thất nghiệp của 06 tháng liền kề trước khi thất nghiệp.\n- Mức hưởng tối đa không quá **05 lần** mức lương cơ sở hoặc lương tối thiểu vùng.";
+                } else if (message.includes("hóa đơn") || message.includes("123")) {
+                    aiResponse += "1. Căn cứ **Điều 9 Nghị định 123/2020/NĐ-CP**:\n- Thời điểm lập hóa đơn điện tử khi cung cấp dịch vụ là **thời điểm hoàn thành việc cung cấp dịch vụ**, không phụ thuộc vào thời điểm đã thu được tiền hay chưa.\n2. Trường hợp thu tiền trước hoặc trong khi cung cấp dịch vụ thì thời điểm lập hóa đơn là thời điểm thu tiền.";
+                } else {
+                    aiResponse += `Về vấn đề: "${message}", bạn nên tham khảo trích dẫn chi tiết tại các Nghị định hướng dẫn thi hành thuộc lĩnh vực liên quan. Hệ thống VBPL VIP đề xuất bạn kiểm tra thêm mục 'Lược đồ tác động' để nắm rõ ngày có hiệu lực.`;
+                }
+
+                chatBox.innerHTML += `
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold text-xs">AI</div>
+                        <div class="bg-gray-100 dark:bg-slate-700/80 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-gray-800 dark:text-gray-100 space-y-1">
+                            <p class="font-semibold text-xs text-emerald-600 dark:text-emerald-400">Trợ Lý Pháp Luật VBPL:</p>
+                            <div class="whitespace-pre-line leading-relaxed">${aiResponse}</div>
+                        </div>
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 600);
+        }
+
+        function clearAIChat() {
+            document.getElementById('aiChatBox').innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 font-bold text-xs">AI</div>
+                    <div class="bg-gray-100 dark:bg-slate-700/80 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-gray-800 dark:text-gray-100 space-y-1">
+                        <p class="font-semibold text-xs text-emerald-600 dark:text-emerald-400">Trợ Lý Pháp Luật VBPL:</p>
+                        <p>Lịch sử đã được làm sạch. Bạn có câu hỏi pháp lý mới nào cần tư vấn không?</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // -------------------- 9. BOOKMARKS & RECENT --------------------
+        function toggleBookmark(docId) {
+            if (savedDocIds.includes(docId)) {
+                savedDocIds = savedDocIds.filter(id => id !== docId);
+                showToast("Đã xóa khỏi danh sách lưu trữ.");
+            } else {
+                savedDocIds.push(docId);
+                showToast("Đã lưu văn bản thành công.");
+            }
+            localStorage.setItem('vbpl_saved', JSON.stringify(savedDocIds));
+            updateSavedCount();
+            filterDocuments();
+            renderSavedBookmarks();
+            if (currentDocument && currentDocument.id === docId) {
+                const isSaved = savedDocIds.includes(docId);
+                document.getElementById('btnBookmarkDetail').className = `p-2 rounded-lg bg-gray-100 dark:bg-slate-700 ${isSaved ? 'text-amber-500' : 'text-gray-600 dark:text-gray-300'} hover:text-amber-500 transition`;
+                document.getElementById('btnBookmarkDetail').innerHTML = `<i class="fa-${isSaved ? 'solid' : 'regular'} fa-bookmark text-base"></i>`;
+            }
+        }
+
+        function toggleBookmarkCurrent() {
+            if (currentDocument) toggleBookmark(currentDocument.id);
+        }
+
+        function updateSavedCount() {
+            document.getElementById('savedCount').innerText = savedDocIds.length;
+        }
+
+        function renderSavedBookmarks() {
+            const container = document.getElementById('bookmarkList');
+            const savedDocs = documentDatabase.filter(d => savedDocIds.includes(d.id));
+
+            if (savedDocs.length === 0) {
+                container.innerHTML = `
+                    <p class="text-xs text-gray-500 text-center py-6">Chưa có văn bản nào được lưu. Bấm biểu tượng Bookmark ở kết quả tìm kiếm để lưu lại.</p>
+                `;
+                return;
+            }
+
+            container.innerHTML = savedDocs.map(doc => `
+                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold bg-navy-800 text-amber-300 px-2 py-0.5 rounded">${doc.code}</span>
+                        <h4 onclick="openDocumentDetail('${doc.id}')" class="font-bold text-xs sm:text-sm text-gray-900 dark:text-white hover:text-brand-600 cursor-pointer">
+                            ${doc.title}
+                        </h4>
+                        <p class="text-[11px] text-gray-500">Ban hành: ${doc.issueDate} | ${doc.issuer}</p>
+                    </div>
+                    <button onclick="toggleBookmark('${doc.id}')" class="text-xs text-red-500 hover:text-red-700 p-2">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function addToRecent(docId) {
+            recentDocIds = recentDocIds.filter(id => id !== docId);
+            recentDocIds.unshift(docId);
+            if (recentDocIds.length > 10) recentDocIds = recentDocIds.slice(0, 10);
+            localStorage.setItem('vbpl_recent', JSON.stringify(recentDocIds));
+        }
+
+        function renderRecentList() {
+            const container = document.getElementById('recentList');
+            const recentDocs = recentDocIds.map(id => documentDatabase.find(d => d.id === id)).filter(Boolean);
+
+            if (recentDocs.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-500 text-center py-6">Chưa có lịch sử xem. Hãy mở một văn bản để bắt đầu.</p>`;
+                return;
+            }
+
+            container.innerHTML = recentDocs.map(doc => `
+                <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold bg-navy-800 text-amber-300 px-2 py-0.5 rounded">${doc.code}</span>
+                        <h4 onclick="openDocumentDetail('${doc.id}')" class="font-bold text-xs sm:text-sm text-gray-900 dark:text-white hover:text-brand-600 cursor-pointer">
+                            ${doc.title}
+                        </h4>
+                        <p class="text-[11px] text-gray-500">Ban hành: ${doc.issueDate} | ${doc.issuer}</p>
+                    </div>
+                    <button onclick="openDocumentDetail('${doc.id}')" class="text-xs text-brand-600 hover:underline font-medium">
+                        Mở lại
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function clearRecent() {
+            recentDocIds = [];
+            localStorage.setItem('vbpl_recent', '[]');
+            renderRecentList();
+            showToast('Đã xóa lịch sử xem gần đây.');
+        }
+
+        // -------------------- 9.5 ADD / UPLOAD DOCUMENT --------------------
+        function openAddDocModal() {
+            document.getElementById('addDocModal').classList.remove('hidden');
+            if (document.getElementById('articleRows').children.length === 0) {
+                addArticleRow();
+            }
+        }
+
+        function closeAddDocModal() {
+            document.getElementById('addDocModal').classList.add('hidden');
+            editingDocId = null;
+            document.getElementById('addDocTitle').innerText = 'Đưa Văn Bản Pháp Luật Lên Hệ Thống';
+        }
+
+        function addArticleRow() {
+            const container = document.getElementById('articleRows');
+            const idx = container.children.length;
+            const row = document.createElement('div');
+            row.className = 'p-3 bg-gray-50 dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 space-y-2 article-row';
+            row.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="text-[11px] font-bold text-emerald-600">Điều #${idx + 1}</span>
+                    <button type="button" onclick="this.closest('.article-row').remove()" class="text-xs text-red-400 hover:text-red-600">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </div>
+                <input type="text" class="art-chapter w-full p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs" placeholder="Chương (VD: Chương I: QUY ĐỊNH CHUNG)">
+                <input type="text" class="art-title w-full p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs" placeholder="Tiêu đề Điều (VD: Điều 1. Phạm vi điều chỉnh)">
+                <textarea class="art-content w-full p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs resize-none" rows="2" placeholder="Nội dung Điều..."></textarea>
+            `;
+            container.appendChild(row);
+        }
+
+        function clearAddDocForm() {
+            document.getElementById('addCode').value = '';
+            document.getElementById('addTitle').value = '';
+            document.getElementById('addIssueDate').value = '';
+            document.getElementById('addEffectiveDate').value = '';
+            document.getElementById('addSigner').value = '';
+            document.getElementById('addSummary').value = '';
+            document.getElementById('articleRows').innerHTML = '';
+            addArticleRow();
+            showToast('Đã xóa form.');
+        }
+
+        function submitAddDocument() {
+            const code = document.getElementById('addCode').value.trim();
+            const title = document.getElementById('addTitle').value.trim();
+            if (!code || !title) {
+                alert('Vui lòng nhập ít nhất Số hiệu và Tên văn bản!');
+                return;
+            }
+
+            // Check duplicate only when adding new
+            if (!editingDocId && documentDatabase.some(d => d.code.toLowerCase() === code.toLowerCase())) {
+                if (!confirm('Số hiệu này đã tồn tại. Bạn vẫn muốn thêm (có thể gây trùng)?')) return;
+            }
+
+            const statusVal = document.getElementById('addStatus').value;
+            const statusMap = {
+                ACTIVE: 'Còn hiệu lực',
+                AMENDED: 'Bị sửa đổi, bổ sung',
+                EXPIRED: 'Hết hiệu lực',
+                PENDING: 'Chưa có hiệu lực'
+            };
+
+            const articles = [];
+            document.querySelectorAll('#articleRows .article-row').forEach(row => {
+                const chapter = row.querySelector('.art-chapter').value.trim();
+                const artTitle = row.querySelector('.art-title').value.trim();
+                const content = row.querySelector('.art-content').value.trim();
+                if (artTitle || content) {
+                    articles.push({
+                        chapter: chapter || 'Chương I: QUY ĐỊNH CHUNG',
+                        title: artTitle || 'Điều (chưa đặt tên)',
+                        content: content || '(Chưa có nội dung)',
+                        enContent: ''
+                    });
+                }
+            });
+
+            if (articles.length === 0) {
+                articles.push({
+                    chapter: 'Chương I: QUY ĐỊNH CHUNG',
+                    title: 'Điều 1. Phạm vi điều chỉnh',
+                    content: document.getElementById('addSummary').value.trim() || 'Nội dung đang được cập nhật.',
+                    enContent: ''
+                });
+            }
+
+            if (editingDocId) {
+                // UPDATE mode
+                const doc = documentDatabase.find(d => d.id === editingDocId);
+                if (doc) {
+                    Object.assign(doc, {
+                        code, title,
+                        type: document.getElementById('addType').value,
+                        issuer: document.getElementById('addIssuer').value,
+                        field: document.getElementById('addField').value,
+                        status: statusVal,
+                        statusText: statusMap[statusVal] || 'Còn hiệu lực',
+                        issueDate: document.getElementById('addIssueDate').value.trim() || doc.issueDate,
+                        effectiveDate: document.getElementById('addEffectiveDate').value.trim() || doc.effectiveDate,
+                        signer: document.getElementById('addSigner').value.trim() || doc.signer,
+                        summary: document.getElementById('addSummary').value.trim() || title,
+                        hasBilingual: document.getElementById('addHasBilingual').checked,
+                        hasDiagram: document.getElementById('addHasDiagram').checked,
+                        articles
+                    });
+                    persistUserDocuments();
+                    filterDocuments();
+                    closeAddDocModal();
+                    editingDocId = null;
+                    document.getElementById('addDocTitle').innerText = 'Đưa Văn Bản Pháp Luật Lên Hệ Thống';
+                    clearAddDocForm();
+                    showToast(`Đã cập nhật văn bản ${code}!`);
+                    openDocumentDetail(doc.id);
+                }
+                return;
+            }
+
+            // ADD mode
+            const newId = 'doc-user-' + Date.now();
+            const newDoc = {
+                id: newId,
+                code: code,
+                title: title,
+                type: document.getElementById('addType').value,
+                issuer: document.getElementById('addIssuer').value,
+                field: document.getElementById('addField').value,
+                status: statusVal,
+                statusText: statusMap[statusVal] || 'Còn hiệu lực',
+                issueDate: document.getElementById('addIssueDate').value.trim() || new Date().toLocaleDateString('vi-VN'),
+                effectiveDate: document.getElementById('addEffectiveDate').value.trim() || new Date().toLocaleDateString('vi-VN'),
+                signer: document.getElementById('addSigner').value.trim() || 'Chưa cập nhật',
+                summary: document.getElementById('addSummary').value.trim() || title,
+                hasBilingual: document.getElementById('addHasBilingual').checked,
+                hasDiagram: document.getElementById('addHasDiagram').checked,
+                isVip: true,
+                isUserAdded: true,
+                articles: articles,
+                relations: { base: [], decrees: [], circulars: [] }
+            };
+
+            documentDatabase.unshift(newDoc);
+            persistUserDocuments();
+            renderGlobalDiagramOptions();
+            populateCompareSelects();
+            filterDocuments();
+            closeAddDocModal();
+            clearAddDocForm();
+            showToast(`Đã đưa văn bản ${code} lên hệ thống thành công!`);
+            setTimeout(() => openDocumentDetail(newId), 400);
+        }
+
+        function persistUserDocuments() {
+            const userDocs = documentDatabase.filter(d => d.isUserAdded);
+            localStorage.setItem('vbpl_user_docs', JSON.stringify(userDocs));
+        }
+
+        function loadUserDocuments() {
+            try {
+                const stored = localStorage.getItem('vbpl_user_docs');
+                if (stored) {
+                    const userDocs = JSON.parse(stored);
+                    // Merge, avoid duplicates by code
+                    userDocs.forEach(ud => {
+                        if (!documentDatabase.some(d => d.code === ud.code)) {
+                            documentDatabase.unshift(ud);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not load user documents', e);
+            }
+        }
+
+        // -------------------- 10. COMPARE --------------------
+        function populateCompareSelects() {
+            const opts = documentDatabase.map(d => `<option value="${d.id}">${d.code} - ${d.title}</option>`).join('');
+            document.getElementById('compareSelectA').innerHTML = opts;
+            document.getElementById('compareSelectB').innerHTML = opts;
+            if (documentDatabase.length > 1) {
+                document.getElementById('compareSelectB').selectedIndex = 1;
+            }
+        }
+
+        function openCompareModal() {
+            document.getElementById('compareModal').classList.remove('hidden');
+        }
+
+        function closeCompareModal() {
+            document.getElementById('compareModal').classList.add('hidden');
+        }
+
+        function renderCompare() {
+            const idA = document.getElementById('compareSelectA').value;
+            const idB = document.getElementById('compareSelectB').value;
+            const docA = documentDatabase.find(d => d.id === idA);
+            const docB = documentDatabase.find(d => d.id === idB);
+            if (!docA || !docB) return;
+
+            const result = document.getElementById('compareResult');
+            result.innerHTML = `
+                <div class="p-4 bg-gray-50 dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 space-y-3">
+                    <h4 class="font-bold text-sm text-brand-600">${docA.code}</h4>
+                    <p class="font-semibold">${docA.title}</p>
+                    <div class="text-xs space-y-1 text-gray-600 dark:text-gray-300">
+                        <p><strong>Loại:</strong> ${docA.type}</p>
+                        <p><strong>Ban hành:</strong> ${docA.issueDate}</p>
+                        <p><strong>Hiệu lực:</strong> ${docA.effectiveDate}</p>
+                        <p><strong>Trạng thái:</strong> ${docA.statusText}</p>
+                        <p><strong>Số điều mẫu:</strong> ${docA.articles.length}</p>
+                    </div>
+                    <div class="pt-2 border-t border-gray-200 dark:border-slate-700">
+                        <p class="text-xs font-semibold mb-1">Tóm tắt:</p>
+                        <p class="text-xs leading-relaxed">${docA.summary}</p>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-700 space-y-3">
+                    <h4 class="font-bold text-sm text-brand-600">${docB.code}</h4>
+                    <p class="font-semibold">${docB.title}</p>
+                    <div class="text-xs space-y-1 text-gray-600 dark:text-gray-300">
+                        <p><strong>Loại:</strong> ${docB.type}</p>
+                        <p><strong>Ban hành:</strong> ${docB.issueDate}</p>
+                        <p><strong>Hiệu lực:</strong> ${docB.effectiveDate}</p>
+                        <p><strong>Trạng thái:</strong> ${docB.statusText}</p>
+                        <p><strong>Số điều mẫu:</strong> ${docB.articles.length}</p>
+                    </div>
+                    <div class="pt-2 border-t border-gray-200 dark:border-slate-700">
+                        <p class="text-xs font-semibold mb-1">Tóm tắt:</p>
+                        <p class="text-xs leading-relaxed">${docB.summary}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // -------------------- 11. EXPORT & UTILS --------------------
+        function printDocument() {
+            window.print();
+        }
+
+        function exportPDF() {
+            if (!currentDocument) {
+                showToast('Hãy mở một văn bản trước khi xuất PDF.');
+                return;
+            }
+            showToast('Đang tạo PDF...');
+            const element = document.getElementById('documentPaper');
+            const opt = {
+                margin: 10,
+                filename: `${currentDocument.code.replace(/\//g, '-')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save().then(() => {
+                showToast('Đã xuất PDF thành công!');
+            }).catch(() => {
+                showToast('Xuất PDF thất bại. Thử lại hoặc dùng In.');
+            });
+        }
+
+        function downloadWordSimulation() {
+            if (!currentDocument) return;
+            showToast(`Đang tạo tệp Word (.docx) cho ${currentDocument.code}... (mô phỏng)`);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-sun text-amber-400' : 'fa-solid fa-moon';
+        }
+
+        // -------------------- PIN / FEATURE --------------------
+        function togglePin(docId) {
+            if (pinnedDocIds.includes(docId)) {
+                pinnedDocIds = pinnedDocIds.filter(id => id !== docId);
+                showToast('Đã bỏ ghim văn bản.');
+            } else {
+                pinnedDocIds.unshift(docId);
+                showToast('Đã ghim văn bản lên đầu danh sách.');
+            }
+            localStorage.setItem('vbpl_pinned', JSON.stringify(pinnedDocIds));
+            filterDocuments();
+        }
+
+        // -------------------- EDIT / DELETE --------------------
+        function editDocument(docId) {
+            const doc = documentDatabase.find(d => d.id === docId);
+            if (!doc || !doc.isUserAdded) {
+                showToast('Chỉ chỉnh sửa được văn bản tự thêm.');
+                return;
+            }
+            editingDocId = docId;
+            document.getElementById('addDocTitle').innerText = 'Chỉnh sửa Văn bản';
+            document.getElementById('addCode').value = doc.code;
+            document.getElementById('addTitle').value = doc.title;
+            document.getElementById('addType').value = doc.type;
+            document.getElementById('addIssuer').value = doc.issuer;
+            document.getElementById('addField').value = doc.field;
+            document.getElementById('addIssueDate').value = doc.issueDate;
+            document.getElementById('addEffectiveDate').value = doc.effectiveDate;
+            document.getElementById('addStatus').value = doc.status;
+            document.getElementById('addSigner').value = doc.signer || '';
+            document.getElementById('addSummary').value = doc.summary || '';
+            document.getElementById('addHasBilingual').checked = !!doc.hasBilingual;
+            document.getElementById('addHasDiagram').checked = !!doc.hasDiagram;
+
+            const container = document.getElementById('articleRows');
+            container.innerHTML = '';
+            (doc.articles || []).forEach(art => {
+                addArticleRow();
+                const last = container.lastElementChild;
+                last.querySelector('.art-chapter').value = art.chapter || '';
+                last.querySelector('.art-title').value = art.title || '';
+                last.querySelector('.art-content').value = art.content || '';
+            });
+            if (container.children.length === 0) addArticleRow();
+
+            openAddDocModal();
+        }
+
+        function deleteDocument(docId) {
+            const doc = documentDatabase.find(d => d.id === docId);
+            if (!doc || !doc.isUserAdded) {
+                showToast('Chỉ xóa được văn bản tự thêm.');
+                return;
+            }
+            if (!confirm(`Xóa văn bản "${doc.code} - ${doc.title}"? Hành động này không thể hoàn tác.`)) return;
+            const idx = documentDatabase.findIndex(d => d.id === docId);
+            if (idx > -1) documentDatabase.splice(idx, 1);
+            pinnedDocIds = pinnedDocIds.filter(id => id !== docId);
+            savedDocIds = savedDocIds.filter(id => id !== docId);
+            recentDocIds = recentDocIds.filter(id => id !== docId);
+            delete annotations[docId];
+            persistUserDocuments();
+            localStorage.setItem('vbpl_pinned', JSON.stringify(pinnedDocIds));
+            localStorage.setItem('vbpl_saved', JSON.stringify(savedDocIds));
+            localStorage.setItem('vbpl_recent', JSON.stringify(recentDocIds));
+            localStorage.setItem('vbpl_annotations', JSON.stringify(annotations));
+            updateSavedCount();
+            filterDocuments();
+            renderSavedBookmarks();
+            renderRecentList();
+            showToast('Đã xóa văn bản.');
+            if (currentDocument && currentDocument.id === docId) switchTab('search');
+        }
+
+        // Override submit to support edit mode
+        const _originalSubmit = typeof submitAddDocument === 'function' ? submitAddDocument : null;
+
+        // -------------------- BULK IMPORT --------------------
+        function openImportModal() {
+            document.getElementById('importModal').classList.remove('hidden');
+        }
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+        function processBulkImport() {
+            const raw = document.getElementById('importTextarea').value.trim();
+            if (!raw) { alert('Vui lòng dán dữ liệu!'); return; }
+
+            const lines = raw.split(/\r?\n/).filter(l => l.trim());
+            let added = 0, skipped = 0;
+            const statusMap = { ACTIVE: 'Còn hiệu lực', AMENDED: 'Bị sửa đổi, bổ sung', EXPIRED: 'Hết hiệu lực', PENDING: 'Chưa có hiệu lực' };
+
+            lines.forEach((line, i) => {
+                // Support tab or | separated: code | title | type | issuer | field | issueDate | effectiveDate
+                const parts = line.split(/\t|\|/).map(p => p.trim());
+                if (parts.length < 2) { skipped++; return; }
+                const [code, title, type = 'Thông tư', issuer = 'Bộ Xây dựng', field = 'Xây dựng', issueDate = '', effectiveDate = ''] = parts;
+                if (!code || !title) { skipped++; return; }
+                if (documentDatabase.some(d => d.code.toLowerCase() === code.toLowerCase())) { skipped++; return; }
+
+                const newDoc = {
+                    id: 'doc-import-' + Date.now() + '-' + i,
+                    code, title,
+                    type: type || 'Thông tư',
+                    issuer: issuer || 'Bộ Xây dựng',
+                    field: field || 'Xây dựng',
+                    status: 'ACTIVE',
+                    statusText: 'Còn hiệu lực',
+                    issueDate: issueDate || new Date().toLocaleDateString('vi-VN'),
+                    effectiveDate: effectiveDate || issueDate || new Date().toLocaleDateString('vi-VN'),
+                    signer: 'Chưa cập nhật',
+                    summary: title,
+                    hasBilingual: false,
+                    hasDiagram: true,
+                    isVip: true,
+                    isUserAdded: true,
+                    articles: [{ chapter: 'Chương I: QUY ĐỊNH CHUNG', title: 'Điều 1. Phạm vi điều chỉnh', content: 'Nội dung đang được cập nhật.', enContent: '' }],
+                    relations: { base: [], decrees: [], circulars: [] }
+                };
+                documentDatabase.unshift(newDoc);
+                added++;
+            });
+
+            persistUserDocuments();
+            renderGlobalDiagramOptions();
+            populateCompareSelects();
+            filterDocuments();
+            closeImportModal();
+            document.getElementById('importTextarea').value = '';
+            showToast(`Import xong: +${added} văn bản, bỏ qua ${skipped}.`);
+        }
+
+        // -------------------- ANNOTATIONS --------------------
+        function saveAnnotation(docId, artIdx, text) {
+            if (!annotations[docId]) annotations[docId] = {};
+            if (text.trim()) annotations[docId][artIdx] = text.trim();
+            else delete annotations[docId][artIdx];
+            localStorage.setItem('vbpl_annotations', JSON.stringify(annotations));
+            showToast('Đã lưu chú thích.');
+        }
+
+        function renderAnnotationInput(docId, artIdx) {
+            const note = (annotations[docId] && annotations[docId][artIdx]) || '';
+            return `
+                <div class="mt-2 no-print">
+                    <textarea class="w-full p-2 text-xs bg-amber-50 dark:bg-slate-900 border border-amber-200 dark:border-slate-700 rounded-lg resize-none" rows="1" placeholder="Chú thích cá nhân..." onblur="saveAnnotation('${docId}', ${artIdx}, this.value)">${note.replace(/</g,'&lt;')}</textarea>
+                </div>
+            `;
+        }
+
+        // -------------------- DEEP LINK --------------------
+        function updateDeepLink(docId) {
+            if (!docId) return;
+            const url = new URL(window.location);
+            url.searchParams.set('doc', docId);
+            history.replaceState(null, '', url);
+        }
+        function handleDeepLink() {
+            const params = new URLSearchParams(window.location.search);
+            const docId = params.get('doc');
+            if (docId && documentDatabase.some(d => d.id === docId)) {
+                setTimeout(() => openDocumentDetail(docId), 300);
+            }
+        }
+        function copyDeepLink() {
+            if (!currentDocument) return;
+            const url = new URL(window.location);
+            url.searchParams.set('doc', currentDocument.id);
+            navigator.clipboard.writeText(url.toString()).then(() => showToast('Đã copy link sâu!'));
+        }
+
+        // -------------------- STATS --------------------
+        function renderStats() {
+            const byField = {};
+            const byYear = {};
+            documentDatabase.forEach(d => {
+                byField[d.field] = (byField[d.field] || 0) + 1;
+                const y = (d.issueDate || '').split('/').pop() || 'N/A';
+                byYear[y] = (byYear[y] || 0) + 1;
+            });
+            const fieldHtml = Object.entries(byField).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+                <div class="flex items-center justify-between text-xs py-1">
+                    <span class="truncate">${k}</span>
+                    <span class="font-bold text-brand-600 ml-2">${v}</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 dark:bg-slate-700 rounded-full mb-2"><div class="h-full bg-brand-500 rounded-full" style="width:${Math.min(100, v/documentDatabase.length*100)}%"></div></div>
+            `).join('');
+            const yearHtml = Object.entries(byYear).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,8).map(([k,v]) => `
+                <div class="flex items-center justify-between text-xs py-1">
+                    <span>${k}</span>
+                    <span class="font-bold text-emerald-600 ml-2">${v}</span>
+                </div>
+            `).join('');
+            document.getElementById('statsContent').innerHTML = `
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div><h4 class="font-bold text-sm mb-3">Theo lĩnh vực</h4>${fieldHtml}</div>
+                    <div><h4 class="font-bold text-sm mb-3">Theo năm ban hành</h4>${yearHtml}<p class="text-[11px] text-gray-400 mt-3">Tổng: <strong>${documentDatabase.length}</strong> văn bản</p></div>
+                </div>
+            `;
+        }
+
+        // -------------------- REAL WORD EXPORT --------------------
+        function downloadWordReal() {
+            if (!currentDocument) { showToast('Hãy mở văn bản trước.'); return; }
+            const doc = currentDocument;
+            let html = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+                <head><meta charset="utf-8"><title>${doc.code}</title>
+                <style>body{font-family:Times New Roman,serif;font-size:13pt;line-height:1.5} h1{font-size:16pt} h2{font-size:14pt}</style></head>
+                <body>
+                <h1>${doc.title}</h1>
+                <p><b>Số hiệu:</b> ${doc.code} | <b>Ban hành:</b> ${doc.issueDate} | <b>Hiệu lực:</b> ${doc.effectiveDate}</p>
+                <p><b>Cơ quan:</b> ${doc.issuer} | <b>Người ký:</b> ${doc.signer}</p>
+                <hr>
+                ${(doc.articles||[]).map(a => `<h2>${a.title}</h2><p style="white-space:pre-line">${a.content}</p>`).join('')}
+                </body></html>
+            `;
+            const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${doc.code.replace(/\//g,'-')}.doc`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Đã tải file Word (.doc)!');
+        }
+
+        // -------------------- FULL-TEXT TOGGLE --------------------
+        function toggleFullTextSearch() {
+            fullTextSearch = !fullTextSearch;
+            const btn = document.getElementById('btnFullText');
+            if (btn) {
+                btn.classList.toggle('bg-brand-600', fullTextSearch);
+                btn.classList.toggle('text-white', fullTextSearch);
+                btn.classList.toggle('bg-gray-100', !fullTextSearch);
+            }
+            showToast(fullTextSearch ? 'Đã bật tìm trong toàn bộ nội dung' : 'Chỉ tìm tiêu đề / số hiệu / tóm tắt');
+            filterDocuments();
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'toast-anim fixed bottom-6 right-6 bg-navy-900/95 backdrop-blur text-white text-xs px-4 py-3 rounded-xl shadow-2xl z-50 flex items-center gap-2.5 border border-slate-700/80';
+            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i> <span class="font-medium">${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(8px)';
+                toast.style.transition = 'all 0.2s ease';
+                setTimeout(() => toast.remove(), 200);
+            }, 2600);
+        }
+    </script>
+</body>
+</html>
