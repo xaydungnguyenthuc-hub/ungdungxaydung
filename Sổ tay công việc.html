@@ -303,7 +303,7 @@ const SCHEMA = {
     {k:"area",l:"Diện tích",t:"text"},{k:"power",l:"Nguồn điện",t:"text"},
     {k:"workers",l:"Quân hôm nay (người)",t:"number"},{k:"output",l:"Sản lượng hôm nay",t:"number"},
     {k:"reporter",l:"Người báo cáo",t:"text"},{k:"note",l:"Ghi chú",t:"textarea",full:1}]},
-  orders:{ label:"đơn ga", fields:[
+  orders:{ label:"hạng mục", fields:[
     {k:"zone",l:"Khu / lô",t:"text"},{k:"type",l:"Loại",t:"text"},
     {k:"qty",l:"Số lượng",t:"number"},{k:"done",l:"Đã đúc",t:"number"},
     {k:"td",l:"Đơn vị",t:"text"},{k:"status",l:"Trạng thái",t:"select",o:ST_ORDER},
@@ -439,7 +439,7 @@ function renderItems(){
   p.append(loadingOr("items",box));
 }
 
-/* ---------- Ga ---------- */
+/* ---------- Hạng mục ---------- */
 function renderGa(){
   const p=$("#panel");
   const tw = S.yards.reduce((s,y)=>s+(num(y.workers)||0),0), to = S.yards.reduce((s,y)=>s+(num(y.output)||0),0);
@@ -464,7 +464,7 @@ function renderGa(){
   p.append(loadingOr("yards",cards));
 
   const tq = S.orders.reduce((s,o)=>s+(num(o.qty)||0),0), td = S.orders.reduce((s,o)=>s+(num(o.done)||0),0);
-  p.append(phead("Đơn giá theo hạng mục",`Đã đúc ${nf(td)}/${nf(tq)} ga trên các đơn đã có số lượng.`,
+  p.append(phead("Đơn giá theo hạng mục",`Đã đúc ${nf(td)}/${nf(tq)} hạng mục trên các đơn đã có số lượng.`,
     h("button",{class:"btn sm",type:"button",onclick:()=>openEditor("orders",null),text:"+ Thêm hạng mục"})));
   const tb = h("tbody");
   for (const o of [...S.orders].sort((a,b)=>(a.zone||"").localeCompare(b.zone||""))){
